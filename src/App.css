@@ -1,0 +1,22 @@
+/* Apply background color to the entire body after MainSection */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+  }
+  
+  .after-main {
+    background-color: #dddddd; /* Light gray background */
+    padding: 40px 0; /* Vertical padding */
+  }
+  
+  /* Apply background color to the entire website after the header */
+  html, body {
+    background-color: #dddddd;
+  }
+  
+  .App {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Ensures the content takes up the full viewport height */
+  }
+  
