@@ -1,0 +1,140 @@
+/* Overall Page Styling */
+.sell-page {
+    background-color: #dddddd;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between; /* Spread the sections left and right */
+}
+
+/* Content Area Flexbox */
+.content-area {
+    display: flex;
+    gap: 20px; /* Space between main content and deals */
+    width: 100%;
+    max-width: 1200px;
+    align-items: flex-start; /* Align sections to the top */
+}
+
+/* Main Section Styling */
+.main-section {
+    background-color: white;
+    flex: 2; /* Takes up more space */
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Adjust the width of the get-started and live preview sections */
+.get-started {
+    flex: 2; /* Adjusted so it takes more space */
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+}
+
+.live-preview {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.live-preview h3 {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.preview-card {
+    background-color: #f5f5f5;
+    padding: 10px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.preview-img {
+    width: 100%;
+    height: auto;
+    border-radius: 5px;
+}
+
+/* Info Banner Styling */
+.info-banner {
+    background-color: white;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Premium Deals Section Styling */
+.premium-deals {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    flex: 1; /* Takes less space */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.premium-deals h2 {
+    margin-bottom: 20px;
+}
+
+.deal-card {
+    background-color: #f5f5f5;
+    padding: 10px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.deal-card img {
+    width: 100%;
+    height: auto;
+    border-radius: 5px;
+}
+
+/* Form Group Styling */
+.form-group {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.form-group input {
+    width: 48%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    margin-bottom: 20px;
+}
+
+/* Next Button */
+.next-btn {
+    background-color: #ffcc00;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.next-btn:hover {
+    background-color: #ffaa00;
+}
