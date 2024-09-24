@@ -1,0 +1,39 @@
+.sell-page {
+    background-color: #dddddd;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between; /* Spread the sections left and right */
+    flex-wrap: wrap; /* Allow the sections to wrap on smaller screens */
+  }
+  
+  .info-section {
+    background-color: #ffffff;
+    padding: 15px;
+    margin: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: 45%; /* Adjust the width for each section */
+    box-sizing: border-box;
+  }
+  
+  .info-section h2 {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+  }
+  
+  .info-section p, .info-section ul {
+    font-size: 1em;
+    line-height: 1.5;
+  }
+  
+  .info-section ul {
+    list-style-type: disc;
+    padding-left: 20px;
+  }
+  
+  @media screen and (max-width: 768px) {
+    .info-section {
+      width: 100%; /* Stack sections vertically on smaller screens */
+    }
+  }
+  
