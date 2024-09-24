@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';  // Import Link from react-router-dom
 import './Header.css';
-import carLogo from './images/auto_car-16.png'; // Import your car logo
+import carLogo from './images/auto_car-16.png'; 
 
 function Header() {
   const [isOpen, setIsOpen] = useState(false);
-  const [isLogin, setIsLogin] = useState(true); // Toggle between Login and Register
+  const [isLogin, setIsLogin] = useState(true);
 
   const togglePopup = () => {
     setIsOpen(!isOpen);
@@ -25,11 +26,11 @@ function Header() {
         <span className="logo-text">vozilo.si</span>
       </div>
       <nav className="nav-links">
-        <a href="/buy" className="nav-link">Buy</a>
+        <Link to="/buy" className="nav-link">Buy</Link>
         <div className="divider"></div>
-        <a href="/sell" className="nav-link">Sell</a>
+        <Link to="/sell" className="nav-link">Sell</Link>
         <div className="divider"></div>
-        <a href="/info" className="nav-link">Info</a>
+        <Link to="/info" className="nav-link">Info</Link>
       </nav>
       <div className="register-button">
         <button onClick={togglePopup} className="register-link">Register / Login</button>

@@ -1,17 +1,33 @@
 import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Header from './Header'; // Ensure the path is correct
 import MainSection from './MainSection'; // Import the MainSection component
 import AfterMain from './AfterMain'; // Import the AfterMain component
-import SalesSection from './SalesSection'; // Import the new SalesSection
+import SalesSection from './SalesSection'; // Import the SalesSection component
+import Buy from './Buy'; // Component for /buy route
+import Sell from './Sell'; // Component for /sell route
+import Info from './Info'; // Component for /info route
 
 function App() {
   return (
-    <div className="App">
-      <Header />
-      <MainSection />  {}
-      <AfterMain />    {}
-      <SalesSection /> {}
-    </div>
+    <Router>  {/* Wrap your app in Router */}
+      <div className="App">
+        <Header />  {/* The header is constant across all routes */}
+        
+        <Routes>  {/* Define the routes for navigation */}
+          <Route path="/" element={
+            <>
+              <MainSection />
+              <AfterMain />
+              <SalesSection />
+            </>
+          } />
+          <Route path="/buy" element={<Buy />} />  {/* Define route for /buy */}
+          <Route path="/sell" element={<Sell />} />  {/* Define route for /sell */}
+          <Route path="/info" element={<Info />} />  {/* Define route for /info */}
+        </Routes>
+      </div>
+    </Router>
   );
 }
 

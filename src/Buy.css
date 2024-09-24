@@ -1,0 +1,110 @@
+/* Overall Page Styling */
+.buy-page {
+    background-color: #f5f5f5;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Filters Section at the Top */
+.filters-section-top {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.filters {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.filter label {
+    font-weight: bold;
+}
+
+.filter select,
+.filter input {
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    width: 100%;
+}
+
+/* Toggle Button */
+.toggle-more-filters {
+    background-color: #ffcc00;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.toggle-more-filters:hover {
+    background-color: #ffaa00;
+}
+
+/* More Filters Section */
+.more-filters-section {
+    margin-top: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+/* Features Grid for Checkboxes */
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+/* Car Listings Section */
+.car-listings-section {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.car-listings {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.car-listing {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    display: flex;
+    gap: 20px;
+}
+
+.car-listing img {
+    width: 300px;
+    height: auto;
+    border-radius: 10px;
+}
+
+.car-details {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.car-details button {
+    padding: 10px 15px;
+    background-color: #ffcc00;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.car-details button:hover {
+    background-color: #ffaa00;
+}
