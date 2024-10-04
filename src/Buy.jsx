@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom'; // Import Link from react-router-dom
 import './Buy.css';
 
 const Buy = () => {
@@ -28,7 +29,7 @@ const Buy = () => {
     keylessEntry: false,
     leatherSeats: false,
     appleCarPlay: false,
-    androidAuto: false
+    androidAuto: false,
   });
 
   const carListings = [
@@ -71,7 +72,7 @@ const Buy = () => {
     }));
   };
 
-  const filteredCars = carListings.filter(car => {
+  const filteredCars = carListings.filter((car) => {
     return (
       (!manufacturer || car.manufacturer === manufacturer) &&
       (!model || car.model === model) &&
@@ -91,7 +92,7 @@ const Buy = () => {
         <div className="filters">
           <div className="filter">
             <label>Manufacturer</label>
-            <select value={manufacturer} onChange={e => setManufacturer(e.target.value)}>
+            <select value={manufacturer} onChange={(e) => setManufacturer(e.target.value)}>
               <option value="">Any</option>
               <option value="Volkswagen">Volkswagen</option>
               <option value="Toyota">Toyota</option>
@@ -101,7 +102,7 @@ const Buy = () => {
 
           <div className="filter">
             <label>Model</label>
-            <select value={model} onChange={e => setModel(e.target.value)}>
+            <select value={model} onChange={(e) => setModel(e.target.value)}>
               <option value="">Any</option>
               <option value="Golf">Golf</option>
               <option value="Corolla">Corolla</option>
@@ -111,7 +112,7 @@ const Buy = () => {
 
           <div className="filter">
             <label>Fuel Type</label>
-            <select value={fuel} onChange={e => setFuel(e.target.value)}>
+            <select value={fuel} onChange={(e) => setFuel(e.target.value)}>
               <option value="">Any</option>
               <option value="Petrol">Petrol</option>
               <option value="Diesel">Diesel</option>
@@ -126,7 +127,7 @@ const Buy = () => {
               type="number"
               value={priceFrom}
               placeholder="Min Price"
-              onChange={e => setPriceFrom(e.target.value)}
+              onChange={(e) => setPriceFrom(e.target.value)}
             />
           </div>
 
@@ -136,7 +137,7 @@ const Buy = () => {
               type="number"
               value={priceTo}
               placeholder="Max Price"
-              onChange={e => setPriceTo(e.target.value)}
+              onChange={(e) => setPriceTo(e.target.value)}
             />
           </div>
 
@@ -151,7 +152,7 @@ const Buy = () => {
           <div className="more-filters-section">
             <div className="filter">
               <label>Exterior Color</label>
-              <select value={color} onChange={e => setColor(e.target.value)}>
+              <select value={color} onChange={(e) => setColor(e.target.value)}>
                 <option value="">Any</option>
                 <option value="Black">Black</option>
                 <option value="White">White</option>
@@ -162,7 +163,7 @@ const Buy = () => {
 
             <div className="filter">
               <label>Interior Color</label>
-              <select value={interiorColor} onChange={e => setInteriorColor(e.target.value)}>
+              <select value={interiorColor} onChange={(e) => setInteriorColor(e.target.value)}>
                 <option value="">Any</option>
                 <option value="Black">Black</option>
                 <option value="Beige">Beige</option>
@@ -173,7 +174,10 @@ const Buy = () => {
 
             <div className="filter">
               <label>Interior Material</label>
-              <select value={interiorMaterial} onChange={e => setInteriorMaterial(e.target.value)}>
+              <select
+                value={interiorMaterial}
+                onChange={(e) => setInteriorMaterial(e.target.value)}
+              >
                 <option value="">Any</option>
                 <option value="Leather">Leather</option>
                 <option value="Fabric">Fabric</option>
@@ -183,7 +187,7 @@ const Buy = () => {
 
             <div className="filter">
               <label>Transmission</label>
-              <select value={transmission} onChange={e => setTransmission(e.target.value)}>
+              <select value={transmission} onChange={(e) => setTransmission(e.target.value)}>
                 <option value="">Any</option>
                 <option value="Automatic">Automatic</option>
                 <option value="Manual">Manual</option>
@@ -192,7 +196,7 @@ const Buy = () => {
 
             <div className="filter">
               <label>Drive Type</label>
-              <select value={driveType} onChange={e => setDriveType(e.target.value)}>
+              <select value={driveType} onChange={(e) => setDriveType(e.target.value)}>
                 <option value="">Any</option>
                 <option value="FWD">Front-Wheel Drive (FWD)</option>
                 <option value="RWD">Rear-Wheel Drive (RWD)</option>
@@ -202,7 +206,7 @@ const Buy = () => {
 
             <div className="filter">
               <label>Number of Doors</label>
-              <select value={doors} onChange={e => setDoors(e.target.value)}>
+              <select value={doors} onChange={(e) => setDoors(e.target.value)}>
                 <option value="">Any</option>
                 <option value="2">2</option>
                 <option value="4">4</option>
@@ -275,19 +279,20 @@ const Buy = () => {
         <div className="car-listings">
           {filteredCars.length > 0 ? (
             filteredCars.map(car => (
-              <div key={car.id} className="car-listing">
-                <img src={car.imgSrc} alt={car.model} />
-                <div className="car-details">
-                  <h3>{car.manufacturer} {car.model}</h3>
-                  <p><strong>Year:</strong> {car.year}</p>
-                  <p><strong>Kilometers:</strong> {car.kilometers} km</p>
-                  <p><strong>Fuel Type:</strong> {car.fuel}</p>
-                  <p><strong>Drive Type:</strong> {car.driveType}</p>
-                  <p><strong>Transmission:</strong> {car.transmission}</p>
-                  <p><strong>Horsepower:</strong> {car.horsepower} HP</p>
-                  <button>Contact Seller</button>
+              <Link to={`/car/${car.id}`} state={{ car }} style={{ textDecoration: 'none', color: 'inherit' }} key={car.id}>
+                <div className="car-listing">
+                  <img src={car.imgSrc} alt={car.model} />
+                  <div className="car-details">
+                    <h3>{car.manufacturer} {car.model}</h3>
+                    <p><strong>Year:</strong> {car.year}</p>
+                    <p><strong>Kilometers:</strong> {car.kilometers} km</p>
+                    <p><strong>Fuel Type:</strong> {car.fuel}</p>
+                    <p><strong>Drive Type:</strong> {car.driveType}</p>
+                    <p><strong>Transmission:</strong> {car.transmission}</p>
+                    <p><strong>Horsepower:</strong> {car.horsepower} HP</p>
+                  </div>
                 </div>
-              </div>
+              </Link>
             ))
           ) : (
             <p>No cars found matching your filters.</p>
