@@ -1,0 +1,185 @@
+/* Overall Page Styling */
+.car-detail-page {
+    display: flex;
+    gap: 30px;
+    padding: 20px;
+    justify-content: center;
+}
+
+/* Left Section Styling */
+.car-detail-left {
+    width: 60%;
+}
+
+h2 {
+    text-align: center;
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+/* Image Gallery Styling */
+.image-gallery {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.image-container {
+    padding-bottom: 50px; /* Only padding at the bottom of the image */
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.main-image {
+    width: 600px;
+    height: 400px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+/* Next and Previous Buttons Styling */
+button.prev, button.next {
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.7); /* Slightly darker for visibility */
+    color: white;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1; /* Ensure buttons are on top of the image */
+    opacity: 0.8; /* Slight transparency */
+    width: 40px; /* Button size */
+    height: 40px;
+}
+
+button.prev {
+    left: 80px; /* Positioned directly on the left edge of the image */
+}
+
+button.next {
+    right: 80px; /* Positioned directly on the right edge of the image */
+}
+
+button.prev:hover, button.next:hover {
+    opacity: 1; /* Full opacity on hover */
+}
+
+/* Car Information Section */
+.car-info {
+    margin-top: 20px;
+}
+
+/* Styling for the blocks under Basic, Technical, and Features sections */
+.car-info h3 {
+    margin-bottom: 10px;
+    font-size: 18px;
+}
+
+.car-info-box {
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px; /* Adds space between sections */
+}
+
+.car-info-box p {
+    margin: 10px 0;
+}
+
+/* Technical Information Section */
+.technical-info-box {
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.technical-info-box p {
+    margin: 10px 0;
+}
+
+/* Features Section */
+.features-info-box {
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.features-info-box p {
+    margin: 10px 0;
+}
+
+/* Right Section (Seller Contact) Styling */
+.car-detail-right {
+    width: 250px;  /* Make it narrower */
+    padding: 15px; /* Reduce padding for compactness */
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 20px;
+}
+
+.car-detail-right h3 {
+    margin-bottom: 10px;
+    font-size: 20px;
+    text-align: center; /* Center the text */
+}
+
+.car-detail-right p {
+    margin-bottom: 5px; /* Reduce margin to save space */
+    text-align: center; /* Center the text */
+}
+
+.contact-btn {
+    padding: 10px 15px;
+    background-color: #ffcc00;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 15px; /* Ensure there's some space above the button */
+}
+
+.contact-btn:hover {
+    background-color: #ffaa00;
+}
+
+/* Ratings Section */
+.ratings-title {
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.car-rating {
+    display: flex;
+    justify-content: center; /* Center the rating */
+    gap: 5px;
+    margin-bottom: 15px;
+}
+
+.rating-square {
+    width: 20px;
+    height: 20px;
+    background-color: green; /* Filled green squares for rating */
+    border-radius: 3px;
+}
+
+.rating-square.empty {
+    background-color: #ddd; /* Gray for empty squares */
+}
+
+/* Price Styling */
+.car-price {
+    font-size: 22px;
+    font-weight: bold;
+    text-align: center; /* Center the price */
+    margin-top: auto; /* Push the price to the bottom */
+}

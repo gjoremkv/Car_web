@@ -10,6 +10,10 @@ function Header() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState(''); // For registration
+  const [errorMessage, setErrorMessage] = useState(''); // For displaying error messages
+
+  const allowedDomains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'proton.me'];
+  const blockedDomains = ['10minutemail.com', 'tempmail.com', 'mailinator.com', 'guerrillamail.com'];
 
   const togglePopup = () => {
     setIsOpen(!isOpen);
@@ -17,28 +21,57 @@ function Header() {
 
   const switchToRegister = () => {
     setIsLogin(false);
+    setErrorMessage(''); // Clear error message when switching
   };
 
   const switchToLogin = () => {
     setIsLogin(true);
+    setErrorMessage(''); // Clear error message when switching
   };
 
-  // Handle registration
+  const validateEmail = (email) => {
+    const emailDomain = email.split('@')[1]?.toLowerCase();
+  
+    if (blockedDomains.includes(emailDomain)) {
+      return false; // Reject email from blocked domains
+    }
+  
+    if (allowedDomains.includes(emailDomain)) {
+      return true; // Accept email from allowed domains
+    }
+  
+    return false; // Reject all other domains
+  };
+  
   const handleRegister = async (e) => {
     e.preventDefault();
+  
+    if (!validateEmail(email)) {
+      alert('Please use a valid email address from allowed providers.');
+      return;
+    }
+  
     try {
       const response = await axios.post('http://localhost:5000/register', {
         username,
         email,
         password,
       });
-      alert(response.data.message);
+      alert(response.data.message); // Display success message from the backend
     } catch (error) {
-      console.error(error);
-      alert('Registration failed');
+      console.log('Error response:', error.response);  // Log the full error response to debug
+  
+      if (error.response && error.response.data && error.response.data.message) {
+        // Display the error message from the backend
+        setErrorMessage(error.response.data.message);
+      } else {
+        // Fallback error message if no message is received from backend
+        setErrorMessage('An unknown error occurred');
+      }
     }
   };
-
+  
+  
   // Handle login
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -132,6 +165,10 @@ function Header() {
                   />
                   <button type="submit">Register</button>
                 </form>
+
+                {/* Display error message if it exists */}
+                {errorMessage && <p className="error-message">{errorMessage}</p>}
+
                 <p>
                   Already have an account? <span onClick={switchToLogin} className="toggle-link">Login here</span>
                 </p>
