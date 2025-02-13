@@ -1,18 +1,27 @@
-import React, { useState } from 'react';
-import { useLocation } from 'react-router-dom';
-import './ListingDetail.css'; // Make sure to import your CSS file
+import React, { useState, useEffect } from 'react';
+import { useParams, useLocation } from 'react-router-dom';
+import './ListingDetail.css'; // Import your CSS file
 
 const ListingDetail = () => {
+  const { id } = useParams(); // Get car ID from the URL
   const location = useLocation();
-  const car = location.state?.car; // Get the car details from Link's state
-  const [currentImage, setCurrentImage] = useState(0); // Track the current image index
+  const car = location.state?.car; // Get car details passed from Link
+  const [images, setImages] = useState([]); // Store car images
+  const [currentImage, setCurrentImage] = useState(0); // Track current image index
 
-  // Example images (replace with car images when available)
-  const images = [
-    car.imgSrc,
-    'https://via.placeholder.com/600x400/0000FF',
-    'https://via.placeholder.com/600x400/FFFF00'
-  ];
+  useEffect(() => {
+    // Fetch images from backend
+    fetch(`http://localhost:5000/car/${id}/images`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.length > 0) {
+          setImages(data.map(img => `http://localhost:5000${img.image_path}`));
+        } else {
+          setImages(['/uploads/default-car.jpg']); // Default image if no images exist
+        }
+      })
+      .catch((err) => console.error("Error fetching images:", err));
+  }, [id]);
 
   const handleNextImage = () => {
     setCurrentImage((currentImage + 1) % images.length);
@@ -26,13 +35,15 @@ const ListingDetail = () => {
     return <div>No car details found.</div>;
   }
 
-  // Dummy car rating (could be dynamically calculated or fetched from a database)
-  const rating = 4; // Assuming a rating out of 5
+  // Dummy car rating (can be fetched dynamically in the future)
+  const rating = 4;
 
   return (
     <div className="car-detail-page">
       <div className="car-detail-left">
         <h2>{car.manufacturer} {car.model} - {car.year}</h2>
+        
+        {/* Image Gallery */}
         <div className="image-gallery">
           <button className="prev" onClick={handlePrevImage}>&lt;</button>
           <div className="image-container">
@@ -41,7 +52,7 @@ const ListingDetail = () => {
           <button className="next" onClick={handleNextImage}>&gt;</button>
         </div>
 
-        {/* Basic Information */}
+        {/* Basic Car Information */}
         <div className="car-info">
           <h3>Basic Information</h3>
           <div className="car-info-box">
@@ -54,7 +65,7 @@ const ListingDetail = () => {
           </div>
         </div>
 
-        {/* Technical Information */}
+        {/* Technical Car Information */}
         <div className="technical-info">
           <h3>Technical Data</h3>
           <div className="technical-info-box">
@@ -65,7 +76,7 @@ const ListingDetail = () => {
           </div>
         </div>
 
-        {/* Features Section */}
+        {/* Car Features */}
         <div className="features-info">
           <h3>Features</h3>
           <div className="features-info-box">
@@ -78,17 +89,18 @@ const ListingDetail = () => {
           </div>
         </div>
 
-        {/* Price at the Bottom */}
+        {/* Price Section */}
         <div className="bottom-price">
           <p className="car-price">${car.price}</p>
         </div>
       </div>
 
+      {/* Right Section: Contact Seller */}
       <div className="car-detail-right">
         <h3>Contact Seller</h3>
-        <p><strong>Seller Name:</strong> John Doe</p> {/* Replace with real data */}
-        <p><strong>Email:</strong> johndoe@example.com</p> {/* Replace with real data */}
-        <p><strong>Phone:</strong> +1234567890</p> {/* Replace with real data */}
+        <p><strong>Seller Name:</strong> John Doe</p> {/* Replace with actual seller data */}
+        <p><strong>Email:</strong> johndoe@example.com</p>
+        <p><strong>Phone:</strong> +1234567890</p>
         
         {/* Ratings Section */}
         <div className="ratings-title">Ratings</div>

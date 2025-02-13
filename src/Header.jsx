@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import './Header.css';
-import carLogo from './images/auto_car-16.png';
+const carLogo = "http://localhost:5000/uploads/auto_car-16.png";
+
 
 function Header() {
   const [isOpen, setIsOpen] = useState(false);
@@ -92,7 +93,7 @@ function Header() {
   return (
     <header className="header">
       <div className="logo-container">
-        <img src={carLogo} alt="vozilo.si" className="logo-image" draggable="false" />
+      <img src={carLogo} alt="vozilo.si" className="logo-image" draggable="false" />
         <span className="logo-text">vozilo.si</span>
       </div>
       <nav className="nav-links">

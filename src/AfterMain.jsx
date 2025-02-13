@@ -1,10 +1,12 @@
 import React from 'react';
 import './AfterMain.css'; // Create a corresponding CSS file
-import carIcon from './images/car.png';
-import vanIcon from './images/van.png';
-import bicycleIcon from './images/bicycle.png';
-import truckIcon from './images/truck.png';
-import motorcycleIcon from './images/motorcycle.png';
+const carIcon = "http://localhost:5000/uploads/car.png";
+const vanIcon = "http://localhost:5000/uploads/van.png";
+const bicycleIcon = "http://localhost:5000/uploads/bicycle.png";
+const truckIcon = "http://localhost:5000/uploads/truck.png";
+const motorcycleIcon = "http://localhost:5000/uploads/motorcycle.png";
+
+
 
 function AfterMain() {
   return (

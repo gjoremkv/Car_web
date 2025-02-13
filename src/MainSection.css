@@ -11,7 +11,7 @@
 .background-image-container {
   width: calc(100% - 120px); /* Subtract 120px (60px on each side) */
   height: 100%;
-  background-image: url('./images/vw_background.jpg');
+  background-image: url('http://localhost:5000/uploads/vw_background.jpg');
   background-size: cover;
   background-position: center;
   padding: 0;
