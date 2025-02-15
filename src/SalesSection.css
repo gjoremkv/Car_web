@@ -1,79 +1,147 @@
-/* src/SalesSection.css */
-
-/* Outer container for the background color #dddddd */
-.sales-outer-container {
-  background-color: #dddddd;
-  padding: 30px 0; /* Adds space around the section */
+/* ==============================
+   General Page Styling
+   ============================== */
+   .sales-outer-container {
+    background-color: #dddddd;
+    padding: 30px 0; /* Adds space around the section */
 }
 
-/* Inner container with the same width as the vehicle section */
 .sales-inner-container {
-  max-width: 1100px; /* Match the vehicle section's width */
-  margin: 0 auto; /* Center the content */
-  background-color: #f5f5f5; /* Inner container's background color */
-  padding: 30px 20px;
-  border-radius: 8px; /* Optional: Rounded corners */
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Optional: Subtle shadow */
+    max-width: 1100px; /* Keeps width consistent */
+    margin: 0 auto;
+    background-color: #f5f5f5;
+    padding: 30px 20px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Styling for the title */
-.sales-inner-container h2 {
-  font-size: 1.5rem; /* Adjusted title size */
-  margin-bottom: 25px;
-  color: #333;
-}
-
-/* Container for the images */
+/* ==============================
+   Car Listing Form Styling
+   ============================== */
 .sales-container {
-  display: flex;
-  justify-content: space-between; /* Space between items */
-  flex-wrap: nowrap; /* Prevent wrapping */
-  gap: 15px; /* Gap between the items */
-  overflow-x: auto; /* Enable scrolling if needed */
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+    gap: 15px;
+    overflow-x: auto;
 }
 
 .sales-item {
-  flex: 1 1 15%; /* Ensure the items stay in the same line */
-  background-color: white;
-  padding: 10px;
-  border-radius: 8px;
-  text-align: center;
+    flex: 1 1 15%;
+    background-color: white;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
 }
 
 .sales-image {
-  width: 100%;
-  height: 100px;
-  background-color: #ddd;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.2rem;
-  color: #999;
-  border-radius: 4px;
+    width: 100%;
+    height: 100px;
+    background-color: #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: #999;
+    border-radius: 4px;
 }
 
 .sales-number {
-  margin-top: 8px;
-  font-size: 1.1rem;
-  font-weight: bold;
-  color: #333;
+    margin-top: 8px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #333;
 }
 
-/* Responsive Design */
+/* ==============================
+   Premium Deals Section
+   ============================== */
+.premium-deals {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.premium-deals h2 {
+    margin-bottom: 20px;
+}
+
+.deal-card {
+    background-color: #f5f5f5;
+    padding: 10px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.deal-card img {
+    width: 100%;
+    height: auto;
+    border-radius: 5px;
+}
+
+/* ==============================
+   Car Listing Form Styling
+   ============================== */
+.form-group {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.form-group input {
+    width: 48%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    margin-bottom: 20px;
+}
+
+/* ==============================
+   Button Styling
+   ============================== */
+.next-btn {
+    background-color: #ffcc00;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.next-btn:hover {
+    background-color: #ffaa00;
+}
+
+/* ==============================
+   Responsive Design
+   ============================== */
 @media (max-width: 1200px) {
-  .sales-container {
-    gap: 10px;
-  }
+    .sales-container {
+        gap: 10px;
+    }
 }
 
 @media (max-width: 768px) {
-  .sales-item {
-    flex: 1 1 20%;
-  }
+    .sales-item {
+        flex: 1 1 20%;
+    }
 }
 
 @media (max-width: 480px) {
-  .sales-item {
-    flex: 1 1 25%;
-  }
+    .sales-item {
+        flex: 1 1 25%;
+    }
 }
