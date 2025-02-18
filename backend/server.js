@@ -50,15 +50,15 @@ const authenticateToken = (req, res, next) => {
   }
 
   const token = authHeader.split(' ')[1];
-  console.log("🔍 Extracted Token:", token);
-  console.log("🔍 Decoded Token Before Verification:", jwt.decode(token));
+  console.log(" Extracted Token:", token);
+  console.log(" Decoded Token Before Verification:", jwt.decode(token));
 
   jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret', (err, user) => {
     if (err) {
       console.error(" JWT Verification Error:", err);
       return res.status(403).json({ message: 'Invalid token' });
     }
-    console.log("✅ Decoded Token:", user); // Add this line
+    console.log(" Decoded Token:", user); // Add this line
   
     console.log(" Decoded Token on Backend:", user);
     req.user = user;
@@ -169,13 +169,32 @@ app.post('/add-car', authenticateToken, upload.single('image'), (req, res) => {
     }
 
     console.log(" Car listed successfully with ID:", result.insertId);
-    res.status(201).json({ message: 'Car listed successfully!', carId: result.insertId, imagePath });
+
+// Send newly added car data back
+const newCar = {
+  id: result.insertId,
+  seller_id: sellerId,
+  manufacturer,
+  model,
+  year,
+  price,
+  drive_type: driveType,
+  fuel,
+  transmission,
+  seats,
+  kilometers,
+  vehicle_type: vehicleType,
+  image_path: imagePath,
+};
+
+res.status(201).json({ message: 'Car listed successfully!', car: newCar });
+
   });
 });
 
 //  **Fetch All Cars**
 app.get('/cars', (req, res) => {
-  console.log("🔍 Fetching all cars...");
+  console.log(" Fetching all cars...");
   const query = 'SELECT * FROM cars';
 
   db.query(query, (err, results) => {
@@ -192,7 +211,7 @@ app.get('/cars', (req, res) => {
 //  **Fetch Specific Car Details**
 app.get('/car/:id', (req, res) => {
   const { id } = req.params;
-  console.log("🔍 Fetching car details for ID:", id);
+  console.log(" Fetching car details for ID:", id);
 
   const query = 'SELECT * FROM cars WHERE id = ?';
 
@@ -217,25 +236,27 @@ app.get('/my-cars', authenticateToken, (req, res) => {
   const sellerId = req.user.id;
 
   if (!sellerId) {
-    console.error("❌ sellerId is missing!");
+    console.error(" sellerId is missing!");
     return res.status(400).json({ message: 'Invalid seller ID' });
   }
   
   console.log("🔍 Fetching cars for user ID:", sellerId);
 
-  const query = 'SELECT * FROM cars WHERE seller_id = ?';
+  const query = 'SELECT * FROM cars WHERE seller_id = ? ORDER BY id DESC';
+
+
   db.query(query, [sellerId], (err, results) => {
     if (err) {
-      console.error(" Database error:", err);
-      return res.status(500).json({ message: 'Database error' });
+      console.error(" SQL Error:", err.sqlMessage || err);
+      return res.status(500).json({ message: 'Database error', error: err.sqlMessage || err });
     }
-
+    
     console.log(" Cars fetched for user:", sellerId);
     res.json(results);
   });
 });
 
-// 📌 **Start the Server**
+//  **Start the Server**
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });

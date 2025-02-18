@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+
 import { Link } from 'react-router-dom'; // Import Link from react-router-dom
 import './Buy.css';
+
 
 const Buy = () => {
   const [showMoreFilters, setShowMoreFilters] = useState(false);
@@ -32,34 +34,24 @@ const Buy = () => {
     androidAuto: false,
   });
 
-  const carListings = [
-    {
-      id: 1,
-      manufacturer: 'Volkswagen',
-      model: 'Golf',
-      year: 2020,
-      kilometers: 10000,
-      price: 20000,
-      fuel: 'Petrol',
-      driveType: 'FWD',
-      transmission: 'Automatic',
-      horsepower: 150,
-      imgSrc: 'https://via.placeholder.com/300',
-    },
-    {
-      id: 2,
-      manufacturer: 'Toyota',
-      model: 'Corolla',
-      year: 2019,
-      kilometers: 15000,
-      price: 18000,
-      fuel: 'Hybrid',
-      driveType: 'RWD',
-      transmission: 'Manual',
-      horsepower: 130,
-      imgSrc: 'https://via.placeholder.com/300',
-    }
-  ];
+  const [carListings, setCarListings] = useState([]);
+
+  useEffect(() => {
+    const fetchCars = () => {
+      fetch("http://localhost:5000/cars")
+        .then((response) => response.json())
+        .then((data) => setCarListings(data))
+        .catch((error) => console.error("Error fetching cars:", error));
+    };
+  
+    fetchCars();
+  
+    // Auto-refresh every 10 seconds to check for new cars
+    const interval = setInterval(fetchCars, 10000);
+    
+    return () => clearInterval(interval); // Cleanup interval on component unmount
+  }, []);
+  
 
   const toggleMoreFilters = () => {
     setShowMoreFilters(!showMoreFilters);
@@ -71,19 +63,20 @@ const Buy = () => {
       [feature]: !prevFeatures[feature],
     }));
   };
-
   const filteredCars = carListings.filter((car) => {
     return (
-      (!manufacturer || car.manufacturer === manufacturer) &&
-      (!model || car.model === model) &&
-      (!fuel || car.fuel === fuel) &&
-      (!color || car.color === color) &&
-      (!transmission || car.transmission === transmission) &&
-      (!driveType || car.driveType === driveType) &&
-      (!priceFrom || car.price >= priceFrom) &&
-      (!priceTo || car.price <= priceTo)
+      (!manufacturer || car.manufacturer.toLowerCase() === manufacturer.toLowerCase()) &&
+      (!model || car.model.toLowerCase() === model.toLowerCase()) &&
+      (!fuel || car.fuel.toLowerCase() === fuel.toLowerCase()) &&
+      (!color || car.color?.toLowerCase() === color.toLowerCase()) &&
+      (!transmission || car.transmission.toLowerCase() === transmission.toLowerCase()) &&
+      (!driveType || car.drive_type.toLowerCase() === driveType.toLowerCase()) &&
+      (!priceFrom || parseFloat(car.price) >= parseFloat(priceFrom)) &&
+      (!priceTo || parseFloat(car.price) <= parseFloat(priceTo))
     );
   });
+  
+  
 
   return (
     <div className="buy-page">
@@ -93,6 +86,7 @@ const Buy = () => {
           <div className="filter">
             <label>Manufacturer</label>
             <select value={manufacturer} onChange={(e) => setManufacturer(e.target.value)}>
+
               <option value="">Any</option>
               <option value="Volkswagen">Volkswagen</option>
               <option value="Toyota">Toyota</option>
@@ -281,15 +275,17 @@ const Buy = () => {
             filteredCars.map(car => (
               <Link to={`/car/${car.id}`} state={{ car }} style={{ textDecoration: 'none', color: 'inherit' }} key={car.id}>
                 <div className="car-listing">
-                  <img src={car.imgSrc} alt={car.model} />
+                <img src={car.image_path ? `http://localhost:5000${car.image_path}` : 'https://via.placeholder.com/300'} alt={car.model} />
                   <div className="car-details">
                     <h3>{car.manufacturer} {car.model}</h3>
                     <p><strong>Year:</strong> {car.year}</p>
                     <p><strong>Kilometers:</strong> {car.kilometers} km</p>
                     <p><strong>Fuel Type:</strong> {car.fuel}</p>
-                    <p><strong>Drive Type:</strong> {car.driveType}</p>
+                    <p><strong>Drive Type:</strong> {car.drive_type}</p>
                     <p><strong>Transmission:</strong> {car.transmission}</p>
+                    <p><strong>Price:</strong> ${car.price}</p>
                     <p><strong>Horsepower:</strong> {car.horsepower} HP</p>
+
                   </div>
                 </div>
               </Link>
