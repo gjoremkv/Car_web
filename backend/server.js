@@ -11,10 +11,10 @@ require('dotenv').config(); // Load environment variables
 const app = express();
 const port = 5000;
 
-// 📌 **Serve Uploaded Images**
+//  **Serve Uploaded Images**
 app.use('/uploads', express.static('uploads'));
 
-// 📌 **Enable CORS**
+//  **Enable CORS**
 app.use(cors({
   origin: 'http://localhost:3000',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -23,7 +23,7 @@ app.use(cors({
 
 app.use(bodyParser.json());
 
-// 📌 **MySQL Database Connection**
+// **MySQL Database Connection**
 const db = mysql.createConnection({
   host: 'localhost',
   user: process.env.DB_USER || 'programmer',
@@ -33,19 +33,19 @@ const db = mysql.createConnection({
 
 db.connect((err) => {
   if (err) {
-    console.error('❌ Database connection error:', err);
+    console.error(' Database connection error:', err);
     return;
   }
-  console.log('✅ Connected to MySQL database.');
+  console.log(' Connected to MySQL database.');
 });
 
-// 📌 **Middleware: Authenticate JWT Token**
+//  **Middleware: Authenticate JWT Token**
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
   console.log("🔍 Received Authorization Header:", authHeader);
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    console.log("❌ No token provided");
+    console.log(" No token provided");
     return res.status(403).json({ message: 'Access denied, no token provided' });
   }
 
@@ -55,16 +55,18 @@ const authenticateToken = (req, res, next) => {
 
   jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret', (err, user) => {
     if (err) {
-      console.error("❌ JWT Verification Error:", err);
+      console.error(" JWT Verification Error:", err);
       return res.status(403).json({ message: 'Invalid token' });
     }
-    console.log("✅ Decoded Token on Backend:", user);
+    console.log("✅ Decoded Token:", user); // Add this line
+  
+    console.log(" Decoded Token on Backend:", user);
     req.user = user;
     next();
   });
 };
 
-// 📌 **User Registration**
+//  **User Registration**
 app.post('/register', (req, res) => {
   const { username, email, password } = req.body;
   console.log("🔍 Registration Request Received:", { username, email });
@@ -72,44 +74,48 @@ app.post('/register', (req, res) => {
   const checkEmailQuery = 'SELECT * FROM users WHERE email = ?';
   db.query(checkEmailQuery, [email], (err, result) => {
     if (err) {
-      console.error("❌ Database error:", err);
+      console.error(" Database error:", err);
       return res.status(500).json({ message: 'Server error' });
     }
 
     if (result.length > 0) {
-      console.log("❌ Email already registered:", email);
+      console.log(" Email already registered:", email);
       return res.status(400).json({ message: 'User already registered' });
     }
 
     const hashedPassword = bcrypt.hashSync(password, 10);
-    const query = 'INSERT INTO users (username, email, password) VALUES (?, ?, ?)';
+    const query = `
+    INSERT INTO users (username, email, password)
+    VALUES (?, ?, ?)
+    `;
+    
 
     db.query(query, [username, email, hashedPassword], (err) => {
       if (err) {
-        console.error("❌ Error inserting user:", err);
+        console.error(" Error inserting user:", err);
         return res.status(500).json({ message: 'Server error' });
       }
 
-      console.log("✅ User registered successfully:", username);
+      console.log(" User registered successfully:", username);
       res.status(201).json({ message: 'User registered successfully' });
     });
   });
 });
 
-// 📌 **User Login**
+//  **User Login**
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
-  console.log("🔍 Login Request Received:", email);
+  console.log(" Login Request Received:", email);
 
   const query = 'SELECT * FROM users WHERE email = ?';
   db.query(query, [email], (err, result) => {
     if (err) {
-      console.error("❌ Database error:", err);
+      console.error(" Database error:", err);
       return res.status(500).json({ message: 'Server error' });
     }
 
     if (result.length === 0) {
-      console.log("❌ Invalid email:", email);
+      console.log("Invalid email:", email);
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
@@ -117,17 +123,17 @@ app.post('/login', (req, res) => {
     const isPasswordValid = bcrypt.compareSync(password, user.password);
 
     if (!isPasswordValid) {
-      console.log("❌ Incorrect password for user:", email);
+      console.log(" Incorrect password for user:", email);
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
     const token = jwt.sign({ id: user.user_id, username: user.username }, process.env.JWT_SECRET || 'your_jwt_secret', { expiresIn: '1h' });
-    console.log("✅ User logged in successfully:", user.username);
+    console.log(" User logged in successfully:", user.username);
     res.status(200).json({ token, username: user.username });
   });
 });
 
-// 📌 **Multer Configuration for Image Uploads**
+//  **Multer Configuration for Image Uploads**
 const storage = multer.diskStorage({
   destination: './uploads/',
   filename: (req, file, cb) => {
@@ -136,16 +142,16 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// 📌 **Add a New Car Listing**
+//  **Add a New Car Listing**
 app.post('/add-car', authenticateToken, upload.single('image'), (req, res) => {
-  console.log("🔍 Add Car Request Received:", req.body);
-  console.log("🔍 Logged-in User ID:", req.user.id);
+  console.log(" Add Car Request Received:", req.body);
+  console.log(" Logged-in User ID:", req.user.id);
 
   const { manufacturer, model, year, price, driveType, fuel, transmission, seats, kilometers, vehicleType } = req.body;
   const sellerId = req.user.id;
 
   if (!req.file) {
-    console.log("❌ Car image is missing");
+    console.log(" Car image is missing");
     return res.status(400).json({ message: 'Car image is required' });
   }
 
@@ -158,32 +164,32 @@ app.post('/add-car', authenticateToken, upload.single('image'), (req, res) => {
 
   db.query(query, [sellerId, manufacturer, model, year, price, driveType, fuel, transmission, seats, kilometers, vehicleType, imagePath], (err, result) => {
     if (err) {
-      console.error("❌ Database error:", err);
+      console.error(" Database error:", err);
       return res.status(500).json({ message: 'Database error' });
     }
 
-    console.log("✅ Car listed successfully with ID:", result.insertId);
+    console.log(" Car listed successfully with ID:", result.insertId);
     res.status(201).json({ message: 'Car listed successfully!', carId: result.insertId, imagePath });
   });
 });
 
-// 📌 **Fetch All Cars**
+//  **Fetch All Cars**
 app.get('/cars', (req, res) => {
   console.log("🔍 Fetching all cars...");
   const query = 'SELECT * FROM cars';
 
   db.query(query, (err, results) => {
     if (err) {
-      console.error("❌ Database error:", err);
+      console.error(" Database error:", err);
       return res.status(500).json({ message: 'Database error' });
     }
 
-    console.log("✅ Cars fetched successfully. Count:", results.length);
+    console.log(" Cars fetched successfully. Count:", results.length);
     res.json(results);
   });
 });
 
-// 📌 **Fetch Specific Car Details**
+//  **Fetch Specific Car Details**
 app.get('/car/:id', (req, res) => {
   const { id } = req.params;
   console.log("🔍 Fetching car details for ID:", id);
@@ -192,33 +198,39 @@ app.get('/car/:id', (req, res) => {
 
   db.query(query, [id], (err, results) => {
     if (err) {
-      console.error("❌ Database error:", err);
+      console.error(" Database error:", err);
       return res.status(500).json({ message: 'Database error' });
     }
 
     if (results.length === 0) {
-      console.log("❌ Car not found:", id);
+      console.log(" Car not found:", id);
       return res.status(404).json({ message: 'Car not found' });
     }
 
-    console.log("✅ Car details fetched:", results[0]);
+    console.log(" Car details fetched:", results[0]);
     res.json(results[0]);
   });
 });
 
-// 📌 **Fetch Cars Listed by Logged-in User**
+//  **Fetch Cars Listed by Logged-in User**
 app.get('/my-cars', authenticateToken, (req, res) => {
   const sellerId = req.user.id;
+
+  if (!sellerId) {
+    console.error("❌ sellerId is missing!");
+    return res.status(400).json({ message: 'Invalid seller ID' });
+  }
+  
   console.log("🔍 Fetching cars for user ID:", sellerId);
 
   const query = 'SELECT * FROM cars WHERE seller_id = ?';
   db.query(query, [sellerId], (err, results) => {
     if (err) {
-      console.error("❌ Database error:", err);
+      console.error(" Database error:", err);
       return res.status(500).json({ message: 'Database error' });
     }
 
-    console.log("✅ Cars fetched for user:", sellerId);
+    console.log(" Cars fetched for user:", sellerId);
     res.json(results);
   });
 });
