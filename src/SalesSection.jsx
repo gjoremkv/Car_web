@@ -13,6 +13,13 @@ const SalesSection = () => {
     seats: '',
     kilometers: '',
     vehicleType: '',
+    color: '',
+    interiorColor: '',
+    interiorMaterial: '',
+    doors: '',
+    features: '',
+    engineCubic: '',
+    horsepower: '',
   });
 
   const [image, setImage] = useState(null);
@@ -90,6 +97,13 @@ const SalesSection = () => {
           seats: '',
           kilometers: '',
           vehicleType: '',
+          color: '',
+          interiorColor: '',
+          interiorMaterial: '',
+          doors: '',
+          features: '',
+          engineCubic: '',
+          horsepower: '',
         });
         setImage(null);
         setPreview('');
@@ -103,70 +117,82 @@ const SalesSection = () => {
   };
 
   return (
-    <div className="sale-page">
-      <h2>Sell Your Car</h2>
-      <p>Enter your car details to list your vehicle for sale.</p>
+    <div className="sales-section-outer">
+      <div className="sales-section-card">
+        <h2>Sell Your Car</h2>
+        <p>Enter your car details to list your vehicle for sale.</p>
 
-      {!isLoggedIn && (
-        <div className="login-warning">
-          <p style={{ color: 'red', fontWeight: 'bold' }}>
-            ⚠️ You must be logged in to add a car listing.
-          </p>
-        </div>
-      )}
+        {!isLoggedIn && (
+          <div className="login-warning">
+            <p style={{ color: 'red', fontWeight: 'bold' }}>
+              ⚠️ You must be logged in to add a car listing.
+            </p>
+          </div>
+        )}
 
-      <form onSubmit={handleSubmit} encType="multipart/form-data">
-        <h3>Car Details</h3>
-        <input type="text" name="manufacturer" placeholder="Manufacturer" value={carData.manufacturer} onChange={handleChange} required />
-        <input type="text" name="model" placeholder="Model" value={carData.model} onChange={handleChange} required />
-        <input type="number" name="year" placeholder="Year" value={carData.year} onChange={handleChange} required />
-        <input type="number" name="price" placeholder="Price" value={carData.price} onChange={handleChange} required />
-        <input type="number" name="kilometers" placeholder="Kilometers Driven" value={carData.kilometers} onChange={handleChange} required />
+        <form onSubmit={handleSubmit} encType="multipart/form-data">
+          <h3>Car Details</h3>
+          <input type="text" name="manufacturer" placeholder="Manufacturer" value={carData.manufacturer} onChange={handleChange} required />
+          <input type="text" name="model" placeholder="Model" value={carData.model} onChange={handleChange} required />
+          <input type="number" name="year" placeholder="Year" value={carData.year} onChange={handleChange} required />
+          <input type="number" name="price" placeholder="Price" value={carData.price} onChange={handleChange} required />
+          <input type="number" name="kilometers" placeholder="Kilometers Driven" value={carData.kilometers} onChange={handleChange} required />
 
-        <select name="driveType" value={carData.driveType} onChange={handleChange}>
-          <option value="">Drive Type</option>
-          <option value="FWD">Front-Wheel Drive</option>
-          <option value="RWD">Rear-Wheel Drive</option>
-          <option value="AWD">All-Wheel Drive</option>
-          <option value="4WD">4-Wheel Drive</option>
-        </select>
+          <select name="driveType" value={carData.driveType} onChange={handleChange}>
+            <option value="">Drive Type</option>
+            <option value="FWD">Front-Wheel Drive</option>
+            <option value="RWD">Rear-Wheel Drive</option>
+            <option value="AWD">All-Wheel Drive</option>
+            <option value="4WD">4-Wheel Drive</option>
+          </select>
 
-        <select name="fuel" value={carData.fuel} onChange={handleChange}>
-          <option value="">Fuel Type</option>
-          <option value="Gasoline">Gasoline</option>
-          <option value="Diesel">Diesel</option>
-          <option value="Electric">Electric</option>
-          <option value="Hybrid">Hybrid</option>
-        </select>
+          <select name="fuel" value={carData.fuel} onChange={handleChange}>
+            <option value="">Fuel Type</option>
+            <option value="Gasoline">Gasoline</option>
+            <option value="Diesel">Diesel</option>
+            <option value="Electric">Electric</option>
+            <option value="Hybrid">Hybrid</option>
+          </select>
 
-        <select name="transmission" value={carData.transmission} onChange={handleChange}>
-          <option value="">Transmission</option>
-          <option value="Automatic">Automatic</option>
-          <option value="Manual">Manual</option>
-          <option value="CVT">CVT</option>
-        </select>
+          <select name="transmission" value={carData.transmission} onChange={handleChange}>
+            <option value="">Transmission</option>
+            <option value="Automatic">Automatic</option>
+            <option value="Manual">Manual</option>
+            <option value="CVT">CVT</option>
+          </select>
 
-        <select name="vehicleType" value={carData.vehicleType} onChange={handleChange}>
-          <option value="">Vehicle Type</option>
-          <option value="Sedan">Sedan</option>
-          <option value="SUV">SUV</option>
-          <option value="Truck">Truck</option>
-          <option value="Van">Van</option>
-          <option value="Coupe">Coupe</option>
-        </select>
+          <select name="vehicleType" value={carData.vehicleType} onChange={handleChange}>
+            <option value="">Vehicle Type</option>
+            <option value="Sedan">Sedan</option>
+            <option value="SUV">SUV</option>
+            <option value="Truck">Truck</option>
+            <option value="Van">Van</option>
+            <option value="Coupe">Coupe</option>
+          </select>
 
-        <input type="number" name="seats" placeholder="Number of Seats" value={carData.seats} onChange={handleChange} required />
+          <input type="number" name="seats" placeholder="Number of Seats" value={carData.seats} onChange={handleChange} required />
 
-        <h3>Upload Car Image</h3>
-        <input type="file" accept="image/*" onChange={handleImageChange} required />
+          {/* New fields for more car options */}
+          <input type="text" name="color" placeholder="Exterior Color" value={carData.color} onChange={handleChange} />
+          <input type="text" name="interiorColor" placeholder="Interior Color" value={carData.interiorColor} onChange={handleChange} />
+          <input type="text" name="interiorMaterial" placeholder="Interior Material" value={carData.interiorMaterial} onChange={handleChange} />
+          <input type="number" name="doors" placeholder="Number of Doors" value={carData.doors} onChange={handleChange} />
+          <textarea name="features" placeholder="Features (e.g. Sunroof, Bluetooth, Navigation, etc.)" value={carData.features} onChange={handleChange} />
 
-        {preview && <img src={preview} alt="Car Preview" className="image-preview" />}
+          <input type="number" name="engineCubic" placeholder="Engine Size (cc or L)" value={carData.engineCubic} onChange={handleChange} />
+          <input type="number" name="horsepower" placeholder="Horsepower" value={carData.horsepower} onChange={handleChange} />
 
-        <button type="submit" disabled={!isLoggedIn}>List Car for Sale</button>
-      </form>
+          <h3>Upload Car Image</h3>
+          <input type="file" accept="image/*" onChange={handleImageChange} required />
 
-      {successMessage && <p className="success-message">{successMessage}</p>}
-      {errorMessage && <p className="error-message">{errorMessage}</p>}
+          {preview && <img src={preview} alt="Car Preview" className="image-preview" />}
+
+          <button type="submit" disabled={!isLoggedIn}>List Car for Sale</button>
+        </form>
+
+        {successMessage && <p className="success-message">{successMessage}</p>}
+        {errorMessage && <p className="error-message">{errorMessage}</p>}
+      </div>
     </div>
   );
 };

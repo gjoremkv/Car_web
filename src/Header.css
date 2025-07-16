@@ -50,6 +50,24 @@
   color: #ffba3a;
 }
 
+.nav-link[title="Home"] {
+  color: #888;
+  font-size: 1.25em;
+  transition: color 0.2s;
+}
+.nav-link[title="Home"]:hover {
+  color: #333;
+}
+
+.nav-link[title="Home"] .nav-home-icon {
+  color: #888;
+  vertical-align: middle;
+  transition: color 0.2s;
+}
+.nav-link[title="Home"]:hover .nav-home-icon {
+  color: #ffba3a;
+}
+
 /* Updated register button */
 .register-button {
   display: flex;

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import './Header.css';
 
 const carLogo = "http://localhost:5000/uploads/auto_car-16.png";
 
 function Header() {
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
@@ -75,11 +76,49 @@ function Header() {
         <span className="logo-text">vozilo.si</span>
       </div>
       <nav className="nav-links">
-        <Link to="/buy" className="nav-link">Buy</Link>
+        {location.pathname === '/buy' ? (
+          <Link to="/" className="nav-link" title="Home">
+            <svg className="nav-home-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 11.5L12 4L21 11.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M5 10.5V20C5 20.5523 5.44772 21 6 21H18C18.5523 21 19 20.5523 19 20V10.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </Link>
+        ) : (
+          <Link to="/buy" className="nav-link">Buy</Link>
+        )}
         <div className="divider"></div>
-        <Link to="/sell" className="nav-link">Sell</Link>
+        {location.pathname === '/sell' ? (
+          <Link to="/" className="nav-link" title="Home">
+            <svg className="nav-home-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 11.5L12 4L21 11.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M5 10.5V20C5 20.5523 5.44772 21 6 21H18C18.5523 21 19 20.5523 19 20V10.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </Link>
+        ) : (
+          <Link to="/sell" className="nav-link">Sell</Link>
+        )}
         <div className="divider"></div>
-        <Link to="/info" className="nav-link">Info</Link>
+        {location.pathname === '/auction' ? (
+          <Link to="/" className="nav-link" title="Home">
+            <svg className="nav-home-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 11.5L12 4L21 11.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M5 10.5V20C5 20.5523 5.44772 21 6 21H18C18.5523 21 19 20.5523 19 20V10.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </Link>
+        ) : (
+          <Link to="/auction" className="nav-link">Auction</Link>
+        )}
+        <div className="divider"></div>
+        {location.pathname === '/info' ? (
+          <Link to="/" className="nav-link" title="Home">
+            <svg className="nav-home-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 11.5L12 4L21 11.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M5 10.5V20C5 20.5523 5.44772 21 6 21H18C18.5523 21 19 20.5523 19 20V10.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </Link>
+        ) : (
+          <Link to="/info" className="nav-link">Info</Link>
+        )}
       </nav>
 
       <div className="register-button">

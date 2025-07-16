@@ -9,6 +9,7 @@ import Buy from './Buy'; // Component for /buy route
 
 import Info from './Info'; // Component for /info route
 import ListingDetail from './ListingDetail'; // New component for detailed car view
+import AuctionSection from './AuctionSection'; // Import the AuctionSection component
 
 function App() {
   return (
@@ -25,7 +26,7 @@ function App() {
           } />
           <Route path="/buy" element={<Buy />} />  {/* Define route for /buy */}
           <Route path="/sell" element={<SalesSection />} />
-                
+          <Route path="/auction" element={<AuctionSection />} />
           <Route path="/info" element={<Info />} />  {/* Define route for /info */}
           <Route path="/car/:id" element={<ListingDetail />} />  {/* New route for car details */}
         </Routes>
