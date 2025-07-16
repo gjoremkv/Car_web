@@ -21,7 +21,6 @@ function App() {
             <>
               <MainSection />
               <AfterMain />
-              <SalesSection />
             </>
           } />
           <Route path="/buy" element={<Buy />} />  {/* Define route for /buy */}

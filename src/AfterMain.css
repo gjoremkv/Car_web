@@ -6,25 +6,59 @@
   
   /* Reduce the width of the content inside AfterMain */
   .vehicle-selection {
-    background-color: #f5f5f5;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    max-width: 1100px; /* Make the box smaller */
-    margin: 0 auto;
+    background-color: #fff;
+    padding: -1px;
+    border-radius: 18px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+    max-width: 1221px;
+    margin: -80px auto 0 auto;
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    border: 1.5px solid #e5e7eb;
   }
   
   
   .vehicle-icons {
     display: flex;
-    justify-content: center;
-    margin-bottom: 20px;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    background: #f5f6fa;
+    border-radius: 16px 0 0 16px;
+    height: auto;
+    min-width: 80px;
+    padding: 18px 0;
+    margin-right: 24px;
+    border-right: 1.5px solid #e5e7eb;
+    box-shadow: none;
   }
   
+  .vehicle-icon-btn {
+    background: none;
+    border: none;
+    padding: 8px;
+    margin: 8px 0;
+    border-radius: 12px;
+    transition: background 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .vehicle-icon-btn:hover,
+  .vehicle-icon-btn:focus {
+    background: #e5e7eb;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+
   .vehicle-icon {
-    width: 50px;
-    height: 50px;
-    margin: 0 10px;
+    width: 48px;
+    height: 48px;
+    margin: 10px 0;
     transition: transform 0.3s;
   }
   
@@ -33,32 +67,48 @@
   }
   
   .filter-section {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: minmax(60px, auto);
     width: 100%;
-    max-width: 900px;
-    flex-wrap: wrap;
-    gap: 15px;
-    margin: 0 auto; /* Center the filter section */
+    align-items: center;
+    justify-items: center;
+    margin: 0;
+    padding: 40px 38px 40px 24px;
+    row-gap: 24px;
+    column-gap: 18px;
   }
+@media (max-width: 900px) {
+  .filter-section {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
   
   .filter-item {
-    flex-basis: calc(33.33% - 10px);
     display: flex;
     flex-direction: column;
+    align-items: center;
+    min-width: 200px;
+    width: 100%;
+    gap: 10px;
   }
   
   .filter-item label {
-    margin-bottom: 5px;
+    margin-bottom: 10px;
     font-weight: bold;
+    font-size: 1rem;
+    text-align: center;
   }
   
   .filter-item select,
   .filter-item input {
-    padding: 10px;
-    font-size: 1rem;
+    padding: 18px;
+    font-size: 1.15rem;
     border: 1px solid #ccc;
-    border-radius: 4px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    width: 100%;
+    box-sizing: border-box;
   }
   
   @media screen and (max-width: 768px) {
@@ -72,4 +122,174 @@
       flex-basis: 100%; /* Full width on mobile */
     }
   }
+
+  .search-btn {
+    background: #ff6600;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 16px 32px;
+    font-size: 1.15rem;
+    font-weight: bold;
+    cursor: pointer;
+    margin-left: 18px;
+    transition: background 0.2s;
+  }
+  .search-btn:hover {
+    background: #e65c00;
+  }
+
+  .more-filters-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f5f6fa;
+    color: #333;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 16px 24px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    margin: 32px auto 0 auto;
+    transition: background 0.2s;
+  }
+  .more-filters-btn:hover {
+    background: #e5e7eb;
+  }
+  .more-filters-icon {
+    display: inline-block;
+    margin-right: 6px;
+  }
+
+  .leasing-buy-toggle {
+    display: flex;
+    gap: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 18px;
+  }
+  .leasing-buy-toggle button {
+    flex: 1;
+    padding: 14px 0;
+    border: none;
+    background: #f5f6fa;
+    color: #333;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .leasing-buy-toggle button.selected {
+    background: #1db954;
+    color: #fff;
+  }
+
+  .vehicle-icon-btn.selected {
+    background: #ffba3a !important;
+  }
+  .vehicle-icon-btn.selected img {
+    filter: none;
+  }
+
+  .leasing-buy-toggle.pill-style {
+    display: flex;
+    gap: 0;
+    border-radius: 32px;
+    overflow: hidden;
+    margin-bottom: 18px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border: 1.5px solid #e5e7eb;
+    background: #f5f6fa;
+    width: 220px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 12px;
+  }
+  .leasing-buy-toggle.pill-style button {
+    flex: 1;
+    padding: 8px 0;
+    border: none;
+    background: transparent;
+    color: #333;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    border-radius: 0;
+  }
+  .leasing-buy-toggle.pill-style button.selected {
+    background: #666;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+
+  .search-btn.center-btn {
+    display: block;
+    margin: 32px auto 0 auto;
+  }
+
+  .filter-actions {
+    grid-column: 3 / 5;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 16px;
+    margin-top: 12px;
+  }
+
+  .search-btn.center-btn, .more-filters-btn {
+    margin: 0;
+    display: inline-flex;
+  }
+  
+  .payment-label label {
+    display: block;
+    margin-bottom: 0;
+    margin-top: 83px;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #333;
+    text-align: center;
+    width: 100%;
+    margin-right: 808px;
+  }
+
+.good-deals-section {
+  background: #fff;
+  max-width: 1168px;
+  margin: 32px auto 0 auto;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+  padding: 32px 38px 32px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.good-deals-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 24px;
+  color: #222;
+}
+
+.good-deals-cards {
+  display: flex;
+  gap: 24px;
+  width: 100%;
+}
+
+.good-deal-card {
+  background: #f5f6fa;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  padding: 24px 18px;
+  min-width: 220px;
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  color: #333;
+}
   
