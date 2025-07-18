@@ -1,185 +1,83 @@
-/* Overall Page Styling */
-.car-detail-page {
-    display: flex;
-    gap: 30px;
-    padding: 20px;
-    justify-content: center;
+.ListingDetail {
+  display: flex;
+  gap: 2rem;
+  padding: 2rem;
+  background: #e2e2e2;
 }
 
-/* Left Section Styling */
-.car-detail-left {
-    width: 60%;
+.ListingDetail .main-content {
+  width: 65%;
 }
 
-h2 {
-    text-align: center;
-    font-size: 24px;
-    margin-bottom: 20px;
+.ListingDetail .sticky-contact {
+  width: 30%;
+  position: sticky;
+  top: 2rem;
+  height: fit-content;
 }
 
-/* Image Gallery Styling */
-.image-gallery {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
+/* Car specs list */
+.car-specs {
+  margin-top: 1.5rem;
+  list-style: none;
+  padding: 0;
 }
 
-.image-container {
-    padding-bottom: 50px; /* Only padding at the bottom of the image */
-    background-color: #f9f9f9;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+.car-specs li {
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
 }
 
-.main-image {
-    width: 600px;
-    height: 400px;
-    object-fit: cover;
-    border-radius: 10px;
+.car-specs li strong {
+  font-weight: bold;
 }
 
-/* Next and Previous Buttons Styling */
-button.prev, button.next {
-    position: absolute;
-    background-color: rgba(0, 0, 0, 0.7); /* Slightly darker for visibility */
-    color: white;
-    border: none;
-    cursor: pointer;
-    padding: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 1; /* Ensure buttons are on top of the image */
-    opacity: 0.8; /* Slight transparency */
-    width: 40px; /* Button size */
-    height: 40px;
+/* Optional: h2 styling */
+.main-content h2 {
+  margin-top: 1rem;
+  font-size: 1.6rem;
 }
 
-button.prev {
-    left: 80px; /* Positioned directly on the left edge of the image */
+.CarImageGallery .main-image {
+  width: 100%;
+  height: 400px;
+  object-fit: cover;
+  border-radius: 10px;
 }
 
-button.next {
-    right: 80px; /* Positioned directly on the right edge of the image */
+.CarImageGallery .thumbnails {
+  display: flex;
+  margin-top: 1rem;
+  gap: 0.5rem;
 }
 
-button.prev:hover, button.next:hover {
-    opacity: 1; /* Full opacity on hover */
+.CarImageGallery .thumbnail {
+  width: 80px;
+  height: 60px;
+  object-fit: cover;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
 }
 
-/* Car Information Section */
-.car-info {
-    margin-top: 20px;
+.CarImageGallery .thumbnail.selected {
+  border: 2px solid #e63946;
 }
 
-/* Styling for the blocks under Basic, Technical, and Features sections */
-.car-info h3 {
-    margin-bottom: 10px;
-    font-size: 18px;
+.ContactSellerCard {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
 }
 
-.car-info-box {
-    padding: 20px;
-    background-color: #f9f9f9;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px; /* Adds space between sections */
-}
-
-.car-info-box p {
-    margin: 10px 0;
-}
-
-/* Technical Information Section */
-.technical-info-box {
-    padding: 20px;
-    background-color: #f9f9f9;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.technical-info-box p {
-    margin: 10px 0;
-}
-
-/* Features Section */
-.features-info-box {
-    padding: 20px;
-    background-color: #f9f9f9;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.features-info-box p {
-    margin: 10px 0;
-}
-
-/* Right Section (Seller Contact) Styling */
-.car-detail-right {
-    width: 250px;  /* Make it narrower */
-    padding: 15px; /* Reduce padding for compactness */
-    background-color: #f9f9f9;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    position: sticky;
-    top: 20px;
-}
-
-.car-detail-right h3 {
-    margin-bottom: 10px;
-    font-size: 20px;
-    text-align: center; /* Center the text */
-}
-
-.car-detail-right p {
-    margin-bottom: 5px; /* Reduce margin to save space */
-    text-align: center; /* Center the text */
-}
-
-.contact-btn {
-    padding: 10px 15px;
-    background-color: #ffcc00;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    width: 100%;
-    margin-top: 15px; /* Ensure there's some space above the button */
-}
-
-.contact-btn:hover {
-    background-color: #ffaa00;
-}
-
-/* Ratings Section */
-.ratings-title {
-    text-align: center;
-    font-size: 16px;
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
-.car-rating {
-    display: flex;
-    justify-content: center; /* Center the rating */
-    gap: 5px;
-    margin-bottom: 15px;
-}
-
-.rating-square {
-    width: 20px;
-    height: 20px;
-    background-color: green; /* Filled green squares for rating */
-    border-radius: 3px;
-}
-
-.rating-square.empty {
-    background-color: #ddd; /* Gray for empty squares */
-}
-
-/* Price Styling */
-.car-price {
-    font-size: 22px;
-    font-weight: bold;
-    text-align: center; /* Center the price */
-    margin-top: auto; /* Push the price to the bottom */
+.ContactSellerCard button {
+  background: #e63946;
+  color: white;
+  padding: 0.8rem 1.2rem;
+  border: none;
+  border-radius: 6px;
+  margin-top: 1rem;
+  cursor: pointer;
+  width: 100%;
 }

@@ -22,8 +22,8 @@ const SalesSection = () => {
     horsepower: '',
   });
 
-  const [image, setImage] = useState(null);
-  const [preview, setPreview] = useState('');
+  const [images, setImages] = useState([]); // Store multiple images
+  const [preview, setPreview] = useState([]); // Store multiple previews
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -43,11 +43,9 @@ const SalesSection = () => {
   };
 
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImage(file);
-      setPreview(URL.createObjectURL(file));
-    }
+    const files = Array.from(e.target.files);
+    setImages(prev => [...prev, ...files]);
+    setPreview(prev => [...prev, ...files.map(file => URL.createObjectURL(file))]);
   };
 
   const handleSubmit = async (e) => {
@@ -65,9 +63,7 @@ const SalesSection = () => {
 
     const formData = new FormData();
     Object.keys(carData).forEach((key) => formData.append(key, carData[key]));
-    if (image) {
-      formData.append('image', image);
-    }
+    images.forEach(img => formData.append('images', img));
 
     try {
       console.log("Sending request to backend...");
@@ -105,8 +101,8 @@ const SalesSection = () => {
           engineCubic: '',
           horsepower: '',
         });
-        setImage(null);
-        setPreview('');
+        setImages([]);
+        setPreview([]);
       } else {
         setErrorMessage(data.message || 'Failed to upload car');
       }
@@ -182,10 +178,12 @@ const SalesSection = () => {
           <input type="number" name="engineCubic" placeholder="Engine Size (cc or L)" value={carData.engineCubic} onChange={handleChange} />
           <input type="number" name="horsepower" placeholder="Horsepower" value={carData.horsepower} onChange={handleChange} />
 
-          <h3>Upload Car Image</h3>
-          <input type="file" accept="image/*" onChange={handleImageChange} required />
+          <h3>Upload Car Images</h3>
+          <input type="file" accept="image/*" onChange={handleImageChange} multiple />
 
-          {preview && <img src={preview} alt="Car Preview" className="image-preview" />}
+          {preview && preview.length > 0 && preview.map((src, idx) => (
+            <img key={idx} src={src} alt={`Car Preview ${idx+1}`} className="image-preview" />
+          ))}
 
           <button type="submit" disabled={!isLoggedIn}>List Car for Sale</button>
         </form>

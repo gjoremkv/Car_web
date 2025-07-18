@@ -146,7 +146,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 //  **Add a New Car Listing**
-app.post('/add-car', authenticateToken, upload.single('image'), (req, res) => {
+app.post('/add-car', authenticateToken, upload.array('images', 10), (req, res) => {
   console.log(" Add Car Request Received:", req.body);
   console.log(" Logged-in User ID:", req.user.id);
 
@@ -154,12 +154,13 @@ app.post('/add-car', authenticateToken, upload.single('image'), (req, res) => {
   const { manufacturer, model, year, price, driveType, fuel, transmission, seats, kilometers, vehicleType, color, interiorColor, interiorMaterial, doors, features, engineCubic, horsepower } = req.body;
   const sellerId = req.user.id;
 
-  if (!req.file) {
-    console.log(" Car image is missing");
-    return res.status(400).json({ message: 'Car image is required' });
+  if (!req.files || req.files.length === 0) {
+    console.log(" Car images are missing");
+    return res.status(400).json({ message: 'At least one car image is required' });
   }
 
-  const imagePath = `/uploads/${req.file.filename}`;
+  // Use the first image as the main image_path
+  const imagePath = `/uploads/${req.files[0].filename}`;
 
   // Updated SQL to include new fields
   const query = `
@@ -167,13 +168,35 @@ app.post('/add-car', authenticateToken, upload.single('image'), (req, res) => {
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
-  db.query(query, [sellerId, manufacturer, model, year, price, driveType, fuel, transmission, seats, kilometers, vehicleType, color, interiorColor, interiorMaterial, doors, features, engineCubic, horsepower, imagePath], (err, result) => {
+  // Convert empty string integer fields to null
+  const safeInt = (val) => (val === '' ? null : val);
+  const doorsSafe = safeInt(doors);
+  const seatsSafe = safeInt(seats);
+  const yearSafe = safeInt(year);
+  const kilometersSafe = safeInt(kilometers);
+  const priceSafe = safeInt(price);
+  const horsepowerSafe = safeInt(horsepower);
+  const engineCubicSafe = safeInt(engineCubic);
+
+  db.query(query, [
+    sellerId, manufacturer, model, yearSafe, priceSafe, driveType, fuel, transmission, seatsSafe, kilometersSafe, vehicleType, color, interiorColor, interiorMaterial, doorsSafe, features, engineCubicSafe, horsepowerSafe, imagePath
+  ], (err, result) => {
     if (err) {
       console.error(" Database error:", err);
       return res.status(500).json({ message: 'Database error' });
     }
 
     console.log(" Car listed successfully with ID:", result.insertId);
+
+    // Insert all images into car_images table
+    req.files.forEach(file => {
+      const imgPath = `/uploads/${file.filename}`;
+      db.query('INSERT INTO car_images (car_id, image_path) VALUES (?, ?)', [result.insertId, imgPath], (imgErr) => {
+        if (imgErr) {
+          console.error('Error saving car image:', imgErr);
+        }
+      });
+    });
 
     // Send newly added car data back
     const newCar = {

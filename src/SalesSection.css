@@ -3,15 +3,15 @@
    ============================== */
    .sales-outer-container {
     background-color: #dddddd;
-    padding: 30px 0; /* Adds space around the section */
+    padding: 10px 0; /* Adds space around the section */
 }
 
 .sales-inner-container {
-    max-width: 1100px; /* Keeps width consistent */
+    max-width: 600px; /* Keeps width consistent */
     margin: 0 auto;
     background-color: #f5f5f5;
-    padding: 30px 20px;
-    border-radius: 8px;
+    padding: 10px 8px;
+    border-radius: 6px;
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
 }
 
@@ -22,28 +22,29 @@
     display: flex;
     justify-content: space-between;
     flex-wrap: nowrap;
-    gap: 15px;
+    gap: 6px;
     overflow-x: auto;
 }
 
 .sales-item {
     flex: 1 1 15%;
     background-color: white;
-    padding: 10px;
-    border-radius: 8px;
+    padding: 4px;
+    border-radius: 4px;
     text-align: center;
+    font-size: 0.9rem;
 }
 
 .sales-image {
     width: 100%;
-    height: 100px;
+    height: 48px;
     background-color: #ddd;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.2rem;
+    font-size: 0.9rem;
     color: #999;
-    border-radius: 4px;
+    border-radius: 2px;
 }
 
 .sales-number {
@@ -128,31 +129,31 @@ textarea {
 /* --- Modern Sales Section Card Styles --- */
 .sales-section-outer {
   background: #dddddd;
-  min-height: 100vh;
-  padding: 40px 0;
+  min-height: 40vh;
+  padding: 10px 0;
 }
 
 .sales-section-card {
   background: #fff;
-  max-width: 800px;
+  max-width: 400px;
   margin: 0 auto;
-  border-radius: 18px;
+  border-radius: 8px;
   box-shadow: 0 8px 32px 0 rgba(31,38,135,0.10);
-  padding: 36px 32px 28px 32px;
+  padding: 10px 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
 .sales-section-card h2 {
-  font-size: 2rem;
+  font-size: 1.1rem;
   margin-bottom: 8px;
   color: #222;
 }
 
 .sales-section-card p {
   color: #555;
-  margin-bottom: 24px;
+  margin-bottom: 8px;
 }
 
 .sales-section-card form {
@@ -165,10 +166,10 @@ textarea {
 .sales-section-card input,
 .sales-section-card select {
   width: 100%;
-  padding: 12px;
-  border-radius: 8px;
+  padding: 6px;
+  border-radius: 4px;
   border: 1.5px solid #e5e7eb;
-  font-size: 1rem;
+  font-size: 0.9rem;
   margin-bottom: 8px;
 }
 
@@ -176,12 +177,12 @@ textarea {
   background: #ff6600;
   color: #fff;
   border: none;
-  border-radius: 10px;
-  padding: 14px 0;
-  font-size: 1.1rem;
+  border-radius: 6px;
+  padding: 8px 0;
+  font-size: 0.9rem;
   font-weight: bold;
   cursor: pointer;
-  margin-top: 12px;
+  margin-top: 6px;
   transition: background 0.2s;
 }
 
@@ -193,7 +194,7 @@ textarea {
   display: block;
   margin: 0 auto 16px auto;
   max-width: 100%;
-  border-radius: 10px;
+  border-radius: 6px;
   border: 1.5px solid #e5e7eb;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }

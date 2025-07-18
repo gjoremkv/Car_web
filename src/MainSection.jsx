@@ -484,7 +484,7 @@ function MainSection() {
   }, [showPopup]);
 
   return (
-    <section className="main-section">
+    <section className={`main-section${showPopup ? ' configurator-open' : ''}`}>
       {/* Background Image and Welcome Box */}
       <div className="background-image-container" onMouseMove={handleMouseMove} onMouseLeave={() => { setParallax({ x: 0, y: 0 }); setIsFocused(false); }}>
         <div className="content-container">

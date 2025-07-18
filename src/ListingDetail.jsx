@@ -1,122 +1,100 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useLocation } from 'react-router-dom';
-import './ListingDetail.css'; // Import your CSS file
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import CarImageGallery from './CarImageGallery';
+import ContactSellerCard from './ContactSellerCard';
+import './ListingDetail.css';
 
-const ListingDetail = () => {
-  const { id } = useParams(); // Get car ID from the URL
-  const location = useLocation();
-  const car = location.state?.car; // Get car details passed from Link
-  const [images, setImages] = useState([]); // Store car images
-  const [currentImage, setCurrentImage] = useState(0); // Track current image index
+export default function ListingDetail() {
+  const { id } = useParams();
+  const [car, setCar] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch images from backend
-    fetch(`http://localhost:5000/car/${id}/images`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.length > 0) {
-          setImages(data.map(img => `http://localhost:5000${img.image_path}`));
+    setLoading(true);
+    fetch(`http://localhost:5000/car/${id}`)
+      .then(res => res.json())
+      .then(data => {
+        if (!data || data.message === 'Car not found') {
+          setCar(null);
         } else {
-          setImages(['/uploads/default-car.jpg']); // Default image if no images exist
+          fetch(`http://localhost:5000/car/${id}/images`)
+            .then(res => res.json())
+            .then(imgs => {
+              let imagesArr = [];
+              if (imgs && imgs.length > 0) {
+                imagesArr = imgs.map(img => `http://localhost:5000${img.image_path}`);
+              } else if (data.image_path) {
+                imagesArr = [`http://localhost:5000${data.image_path}`];
+              } else {
+                imagesArr = ['/uploads/default-car.jpg'];
+              }
+              setCar({ ...data, images: imagesArr });
+              setLoading(false);
+            })
+            .catch(() => {
+              let imagesArr = [];
+              if (data.image_path) {
+                imagesArr = [`http://localhost:5000${data.image_path}`];
+              } else {
+                imagesArr = ['/uploads/default-car.jpg'];
+              }
+              setCar({ ...data, images: imagesArr });
+              setLoading(false);
+            });
         }
       })
-      .catch((err) => console.error("Error fetching images:", err));
+      .catch(() => {
+        setCar(null);
+        setLoading(false);
+      });
   }, [id]);
 
-  const handleNextImage = () => {
-    setCurrentImage((currentImage + 1) % images.length);
-  };
+  if (loading) return <p>Loading...</p>;
+  if (!car) return <p>Car not found</p>;
 
-  const handlePrevImage = () => {
-    setCurrentImage((currentImage - 1 + images.length) % images.length);
-  };
-
-  if (!car) {
-    return <div>No car details found.</div>;
-  }
-
-  // Dummy car rating (can be fetched dynamically in the future)
-  const rating = 4;
+  const {
+    manufacturer,
+    model,
+    year,
+    price,
+    kilometers,
+    fuel,
+    drive_type,
+    transmission,
+    horsepower,
+    color,
+    interior_color,
+    interior_material,
+    doors,
+    seats,
+    vehicle_type,
+    seller,
+    images = [],
+  } = car;
 
   return (
-    <div className="car-detail-page">
-      <div className="car-detail-left">
-        <h2>{car.manufacturer} {car.model} - {car.year}</h2>
-        
-        {/* Image Gallery */}
-        <div className="image-gallery">
-          <button className="prev" onClick={handlePrevImage}>&lt;</button>
-          <div className="image-container">
-            <img src={images[currentImage]} alt={car.model} className="main-image" />
-          </div>
-          <button className="next" onClick={handleNextImage}>&gt;</button>
-        </div>
-
-        {/* Basic Car Information */}
-        <div className="car-info">
-          <h3>Basic Information</h3>
-          <div className="car-info-box">
-            <p><strong>Price:</strong> ${car.price}</p>
-            <p><strong>Kilometers:</strong> {car.kilometers} km</p>
-            <p><strong>Fuel Type:</strong> {car.fuel}</p>
-            <p><strong>Drive Type:</strong> {car.driveType}</p>
-            <p><strong>Transmission:</strong> {car.transmission}</p>
-            <p><strong>Horsepower:</strong> {car.horsepower} HP</p>
-          </div>
-        </div>
-
-        {/* Technical Car Information */}
-        <div className="technical-info">
-          <h3>Technical Data</h3>
-          <div className="technical-info-box">
-            <p><strong>Engine:</strong> 2.0L Turbo</p>
-            <p><strong>Max Speed:</strong> 240 km/h</p>
-            <p><strong>Fuel Consumption:</strong> 7.5L/100km</p>
-            <p><strong>CO2 Emissions:</strong> 120 g/km</p>
-          </div>
-        </div>
-
-        {/* Car Features */}
-        <div className="features-info">
-          <h3>Features</h3>
-          <div className="features-info-box">
-            <p><strong>Airbags:</strong> Front and Side Airbags</p>
-            <p><strong>Parking Sensors:</strong> Front and Rear Parking Sensors</p>
-            <p><strong>Bluetooth:</strong> Enabled</p>
-            <p><strong>Navigation System:</strong> Built-in GPS</p>
-            <p><strong>Heated Seats:</strong> Front and Rear Heated Seats</p>
-            <p><strong>Cruise Control:</strong> Adaptive Cruise Control</p>
-          </div>
-        </div>
-
-        {/* Price Section */}
-        <div className="bottom-price">
-          <p className="car-price">${car.price}</p>
-        </div>
+    <div className="ListingDetail">
+      <div className="main-content">
+        <CarImageGallery images={images} />
+        <h2>{manufacturer} {model} - {year}</h2>
+        <ul className="car-specs">
+          <li><strong>Price:</strong> ${price}</li>
+          <li><strong>Kilometers:</strong> {kilometers} km</li>
+          <li><strong>Fuel Type:</strong> {fuel}</li>
+          <li><strong>Drive Type:</strong> {drive_type}</li>
+          <li><strong>Transmission:</strong> {transmission}</li>
+          <li><strong>Horsepower:</strong> {horsepower || 'No information'}</li>
+          <li><strong>Color:</strong> {color}</li>
+          <li><strong>Interior Color:</strong> {interior_color}</li>
+          <li><strong>Interior Material:</strong> {interior_material || 'No information'}</li>
+          <li><strong>Doors:</strong> {doors}</li>
+          <li><strong>Seats:</strong> {seats}</li>
+          <li><strong>Vehicle Type:</strong> {vehicle_type}</li>
+        </ul>
       </div>
-
-      {/* Right Section: Contact Seller */}
-      <div className="car-detail-right">
-        <h3>Contact Seller</h3>
-        <p><strong>Seller Name:</strong> John Doe</p> {/* Replace with actual seller data */}
-        <p><strong>Email:</strong> johndoe@example.com</p>
-        <p><strong>Phone:</strong> +1234567890</p>
-        
-        {/* Ratings Section */}
-        <div className="ratings-title">Ratings</div>
-        <div className="car-rating">
-          {[...Array(5)].map((_, index) => (
-            <div
-              key={index}
-              className={`rating-square ${index < rating ? '' : 'empty'}`}
-            ></div>
-          ))}
-        </div>
-
-        <button className="contact-btn">Contact Seller</button>
+      <div className="sticky-contact">
+        <ContactSellerCard seller={seller} price={price} />
       </div>
     </div>
   );
-};
-
-export default ListingDetail;
+}
