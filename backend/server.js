@@ -324,6 +324,22 @@ app.get('/car/:id', (req, res) => {
   });
 });
 
+// GET /car/:id/images
+app.get('/car/:id/images', (req, res) => {
+  const { id } = req.params;
+  db.query(
+    'SELECT image_path FROM car_images WHERE car_id = ?',
+    [id],
+    (err, rows) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Failed to fetch images' });
+      }
+      res.json(rows);
+    }
+  );
+});
+
 //  **Fetch Cars Listed by Logged-in User**
 app.get('/my-cars', authenticateToken, (req, res) => {
   const sellerId = req.user.id;

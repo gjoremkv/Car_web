@@ -1,56 +1,36 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import CarImageGallery from './CarImageGallery';
 import ContactSellerCard from './ContactSellerCard';
 import './ListingDetail.css';
 
 export default function ListingDetail() {
-  const { id } = useParams();
-  const [car, setCar] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const location = useLocation();
+  const [car, setCar] = useState({});
+  const [images, setImages] = useState([]);
 
   useEffect(() => {
-    setLoading(true);
-    fetch(`http://localhost:5000/car/${id}`)
-      .then(res => res.json())
-      .then(data => {
-        if (!data || data.message === 'Car not found') {
-          setCar(null);
-        } else {
-          fetch(`http://localhost:5000/car/${id}/images`)
-            .then(res => res.json())
-            .then(imgs => {
-              let imagesArr = [];
-              if (imgs && imgs.length > 0) {
-                imagesArr = imgs.map(img => `http://localhost:5000${img.image_path}`);
-              } else if (data.image_path) {
-                imagesArr = [`http://localhost:5000${data.image_path}`];
-              } else {
-                imagesArr = ['/uploads/default-car.jpg'];
-              }
-              setCar({ ...data, images: imagesArr });
-              setLoading(false);
-            })
-            .catch(() => {
-              let imagesArr = [];
-              if (data.image_path) {
-                imagesArr = [`http://localhost:5000${data.image_path}`];
-              } else {
-                imagesArr = ['/uploads/default-car.jpg'];
-              }
-              setCar({ ...data, images: imagesArr });
-              setLoading(false);
-            });
-        }
+    const carObj = location.state?.car;
+    if (!carObj || !carObj.id) return;
+    setCar(carObj);
+    fetch(`http://localhost:5000/car/${carObj.id}/images`)
+      .then((res) => res.json())
+      .then((data) => {
+        // Always include the main image first, then filter out duplicates
+        const allImages = [
+          carObj.image_path ? `http://localhost:5000${carObj.image_path}` : '/uploads/default-car.jpg',
+          ...data.map((img) => `http://localhost:5000${img.image_path}`)
+        ];
+        // Remove duplicates
+        const uniqueImages = allImages.filter((url, idx, arr) => arr.indexOf(url) === idx);
+        setImages(uniqueImages);
       })
       .catch(() => {
-        setCar(null);
-        setLoading(false);
+        setImages(carObj.image_path ? [`http://localhost:5000${carObj.image_path}`] : ['/uploads/default-car.jpg']);
       });
-  }, [id]);
+  }, [location.state]);
 
-  if (loading) return <p>Loading...</p>;
-  if (!car) return <p>Car not found</p>;
+  if (!car || !car.id) return <p>Car not found</p>;
 
   const {
     manufacturer,
@@ -69,7 +49,6 @@ export default function ListingDetail() {
     seats,
     vehicle_type,
     seller,
-    images = [],
   } = car;
 
   return (
