@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './SalesSection.css';
 import carIcon from './icons/auto-icon-15.png';
 import seatIcon from './icons/car-interior.png';
+import { modelsByBrand } from './data/modelsByBrand';
 
 const SalesSection = () => {
   const [carData, setCarData] = useState({
@@ -141,8 +142,35 @@ const SalesSection = () => {
           <div className="form-section">
             <h3>Basic Information</h3>
             <div className="form-row">
-              <input type="text" name="manufacturer" placeholder="Manufacturer" value={carData.manufacturer} onChange={handleChange} required />
-              <input type="text" name="model" placeholder="Model" value={carData.model} onChange={handleChange} required />
+              <select
+                name="manufacturer"
+                value={carData.manufacturer}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Select Manufacturer</option>
+                {Object.keys(modelsByBrand).map((brand) => (
+                  <option key={brand} value={brand}>{brand}</option>
+                ))}
+              </select>
+
+              {modelsByBrand[carData.manufacturer] ? (
+                <select name="model" value={carData.model} onChange={handleChange} required>
+                  <option value="">Select Model</option>
+                  {modelsByBrand[carData.manufacturer].map(model => (
+                    <option key={model} value={model}>{model}</option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  name="model"
+                  placeholder="Enter Model"
+                  value={carData.model}
+                  onChange={handleChange}
+                  required
+                />
+              )}
             </div>
             <div className="form-row">
               <select name="year" value={carData.year} onChange={handleChange} required>
