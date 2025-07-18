@@ -437,6 +437,47 @@ app.post('/save-config', authenticateToken, (req, res) => {
   });
 });
 
+// ✅ CREATE MESSAGE ROUTE
+app.post('/api/messages', async (req, res) => {
+  const { senderId, receiverId, listingId, message } = req.body;
+
+  if (!senderId || !receiverId || !listingId || !message?.trim()) {
+    return res.status(400).json({ error: 'Missing fields' });
+  }
+
+  try {
+    await db.promise().query(
+      `INSERT INTO chat_messages (sender_id, receiver_id, listing_id, message)
+       VALUES (?, ?, ?, ?)`,
+      [senderId, receiverId, listingId, message]
+    );
+
+    res.status(201).json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+// GET /api/messages/:userId
+app.get('/api/messages/:userId', async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+    const [rows] = await db.promise().query(
+      `SELECT * FROM chat_messages
+       WHERE sender_id = ? OR receiver_id = ?
+       ORDER BY created_at DESC`,
+      [userId, userId]
+    );
+
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch messages' });
+  }
+});
+
 //  **Start the Server**
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);

@@ -4,6 +4,24 @@ import carIcon from './icons/auto-icon-15.png';
 import seatIcon from './icons/car-interior.png';
 import { modelsByBrand } from './data/modelsByBrand';
 
+const popularManufacturers = [
+  'Volkswagen', 'Renault', 'Toyota', 'Peugeot', 'Mercedes-Benz', 'BMW', 'Skoda',
+  'Ford', 'Audi', 'Fiat', 'Opel', 'Citroën', 'Nissan', 'Volvo', 'Tesla', 'Chevrolet'
+];
+
+const allManufacturers = [
+  ...popularManufacturers,
+  // All other brands (A-Z)
+  'Acura', 'Alfa Romeo', 'Aston Martin', 'Bentley', 'Bugatti', 'Cadillac',
+  'Chrysler', 'Dacia', 'Daewoo', 'Daihatsu', 'Dodge', 'DS Automobiles', 'Ferrari',
+  'Genesis', 'Geely', 'GMC', 'Great Wall', 'Holden', 'Honda', 'Hummer', 'Hyundai',
+  'Infiniti', 'Isuzu', 'Jaguar', 'Jeep', 'Kia', 'Koenigsegg', 'Lada', 'Lamborghini',
+  'Lancia', 'Land Rover', 'Lexus', 'Lincoln', 'Lotus', 'Lucid', 'Mahindra', 'Maserati',
+  'Maybach', 'Mazda', 'McLaren', 'Mini', 'Mitsubishi', 'Nissan', 'Oldsmobile', 'Opel',
+  'Pagani', 'Polestar', 'Pontiac', 'Porsche', 'Ram', 'Ravon', 'Rimac', 'Rolls-Royce',
+  'Rover', 'Saab', 'Seat', 'Smart', 'SsangYong', 'Subaru', 'Suzuki', 'Zastava'
+];
+
 const SalesSection = () => {
   const [carData, setCarData] = useState({
     manufacturer: '',
@@ -149,9 +167,18 @@ const SalesSection = () => {
                 required
               >
                 <option value="">Select Manufacturer</option>
-                {Object.keys(modelsByBrand).map((brand) => (
+                {/* Popular brands at the top */}
+                {popularManufacturers.map((brand) => (
                   <option key={brand} value={brand}>{brand}</option>
                 ))}
+                <option disabled>────────────</option>
+                {/* All other brands, sorted alphabetically and excluding popular ones */}
+                {Array.from(new Set(allManufacturers))
+                  .filter(brand => !popularManufacturers.includes(brand))
+                  .sort()
+                  .map((brand) => (
+                    <option key={brand} value={brand}>{brand}</option>
+                  ))}
               </select>
 
               {modelsByBrand[carData.manufacturer] ? (

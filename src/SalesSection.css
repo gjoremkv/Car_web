@@ -378,6 +378,25 @@
   pointer-events: none;
 }
 
+.message-box {
+  border: 1px solid #ccc;
+  padding: 1rem;
+  margin-top: 1rem;
+  background: #f9f9f9;
+  border-radius: 6px;
+}
+
+.message-box textarea {
+  width: 100%;
+  font-size: 14px;
+  resize: vertical;
+}
+
+.message-box button {
+  padding: 0.5rem 1rem;
+  margin-top: 0.5rem;
+}
+
 /* ==============================
    Responsive Design
    ============================== */

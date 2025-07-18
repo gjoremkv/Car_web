@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import CarImageGallery from './CarImageGallery';
 import ContactSellerCard from './ContactSellerCard';
+import MessageBox from './components/MessageBox';
 import './ListingDetail.css';
 
-export default function ListingDetail() {
+export default function ListingDetail({ currentUser }) {
   const location = useLocation();
   const [car, setCar] = useState({});
   const [images, setImages] = useState([]);
@@ -43,10 +44,13 @@ export default function ListingDetail() {
     doors,
     seats,
     vehicle_type,
-    seller,
+    seller_id,
     engine_cubic,
     features,
   } = car;
+
+  // Debug log for troubleshooting message box visibility
+  console.log('currentUser', currentUser, 'seller_id', seller_id, 'car', car);
 
   return (
     <div className="ListingDetail">
@@ -59,6 +63,19 @@ export default function ListingDetail() {
             {color || 'N/A'} exterior, this vehicle is ready to hit the road.
           </p>
         </div>
+        
+        {/* Only show message box if viewing someone else's car */}
+        {currentUser && Number(currentUser.id) !== Number(seller_id) && (
+          <div className="message-section">
+            <h3>Contact Seller</h3>
+            <MessageBox
+              senderId={currentUser.id}
+              receiverId={seller_id}
+              listingId={car?.id}
+            />
+          </div>
+        )}
+        
         <table className="spec-table">
           <tbody>
             <tr><td><strong>Price:</strong></td><td>{price} €</td></tr>
@@ -88,7 +105,7 @@ export default function ListingDetail() {
         )}
       </div>
       <div className="sticky-contact">
-        <ContactSellerCard seller={seller} price={price} />
+        <ContactSellerCard seller={seller_id} price={price} />
       </div>
     </div>
   );

@@ -34,10 +34,19 @@ function Header() {
       });
 
       const { token, username } = response.data;
+      
+      // Decode the token to get user ID
+      const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+      const userId = tokenPayload.id;
+      
       localStorage.setItem('token', token);
       localStorage.setItem('username', username);
+      localStorage.setItem('userId', userId);
       setUsername(username);
       setIsOpen(false);
+      
+      // Dispatch storage event to notify App component
+      window.dispatchEvent(new Event('storage'));
     } catch (error) {
       console.error(error);
       alert('Login failed');
@@ -66,7 +75,11 @@ function Header() {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('username');
+    localStorage.removeItem('userId');
     setUsername('');
+    
+    // Dispatch storage event to notify App component
+    window.dispatchEvent(new Event('storage'));
   };
 
   return (
