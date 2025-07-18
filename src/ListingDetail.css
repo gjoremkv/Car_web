@@ -81,3 +81,205 @@
   cursor: pointer;
   width: 100%;
 }
+
+.main-image-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.CarImageGallery .arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 2rem;
+  background: rgba(0, 0, 0, 0.3);
+  color: white;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  z-index: 2;
+  border-radius: 5px;
+}
+
+.CarImageGallery .arrow.left {
+  left: 10px;
+}
+
+.CarImageGallery .arrow.right {
+  right: 10px;
+}
+
+.CarImageGallery .arrow:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.car-description {
+  background: white;
+  padding: 1rem;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+  box-shadow: 0 0 4px rgba(0,0,0,0.05);
+}
+
+.car-specs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem 2rem;
+  font-size: 1rem;
+  background: white;
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 0 4px rgba(0,0,0,0.05);
+}
+
+.car-specs-grid div {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid #eee;
+  padding: 0.3rem 0;
+}
+
+.car-specs-grid strong {
+  color: #444;
+}
+
+.CarImageGallery .main-image-container {
+  position: relative;
+}
+
+.car-description-box {
+  background: white;
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  margin: 1rem 0;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.08);
+  font-size: 1rem;
+}
+
+.spec-table {
+  width: 100%;
+  margin-top: 1rem;
+  background: white;
+  border-radius: 10px;
+  padding: 1rem;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.08);
+  border-collapse: collapse;
+}
+
+.spec-table td {
+  padding: 0.6rem 0.8rem;
+  vertical-align: top;
+}
+
+.features-grid {
+  background: white;
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  margin-top: 1.5rem;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.08);
+}
+
+.features-grid ul {
+  columns: 2;
+  list-style: none;
+  padding: 0;
+}
+
+.features-grid li {
+  margin-bottom: 0.5rem;
+}
+
+.features-grid .check {
+  color: green;
+  margin-right: 0.5rem;
+}
+
+.ContactSellerCardModern {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 16px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1rem;
+  font-size: 1rem;
+}
+
+.ContactSellerCardModern h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.ContactSellerCardModern .location {
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.ContactSellerCardModern .rating {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 1.1rem;
+}
+
+.ContactSellerCardModern .rating .star {
+  color: #ccc;
+}
+
+.ContactSellerCardModern .rating .star.full {
+  color: #f5b50a;
+}
+
+.ContactSellerCardModern .rating-number {
+  margin-left: 0.3rem;
+  font-size: 0.9rem;
+  color: #777;
+}
+
+.ContactSellerCardModern .price {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #111;
+}
+
+.ContactSellerCardModern .phone {
+  font-size: 0.95rem;
+}
+
+.ContactSellerCardModern .label {
+  font-weight: bold;
+  margin-right: 0.25rem;
+}
+
+.ContactSellerCardModern .email-btn {
+  background: #e63946;
+  color: white;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.ContactSellerCardModern .actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.ContactSellerCardModern .actions button {
+  flex: 1;
+  padding: 0.5rem;
+  background: #fff;
+  border: 2px solid #800080;
+  color: #800080;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+}

@@ -16,17 +16,12 @@ export default function ListingDetail() {
     fetch(`http://localhost:5000/car/${carObj.id}/images`)
       .then((res) => res.json())
       .then((data) => {
-        // Always include the main image first, then filter out duplicates
         const allImages = [
-          carObj.image_path ? `http://localhost:5000${carObj.image_path}` : '/uploads/default-car.jpg',
-          ...data.map((img) => `http://localhost:5000${img.image_path}`)
-        ];
-        // Remove duplicates
+          carObj.image_path ? `http://localhost:5000${carObj.image_path}` : null,
+          ...data.map(img => `http://localhost:5000${img.image_path}`)
+        ].filter(Boolean);
         const uniqueImages = allImages.filter((url, idx, arr) => arr.indexOf(url) === idx);
         setImages(uniqueImages);
-      })
-      .catch(() => {
-        setImages(carObj.image_path ? [`http://localhost:5000${carObj.image_path}`] : ['/uploads/default-car.jpg']);
       });
   }, [location.state]);
 
@@ -49,6 +44,8 @@ export default function ListingDetail() {
     seats,
     vehicle_type,
     seller,
+    engine_cubic,
+    features,
   } = car;
 
   return (
@@ -56,20 +53,39 @@ export default function ListingDetail() {
       <div className="main-content">
         <CarImageGallery images={images} />
         <h2>{manufacturer} {model} - {year}</h2>
-        <ul className="car-specs">
-          <li><strong>Price:</strong> ${price}</li>
-          <li><strong>Kilometers:</strong> {kilometers} km</li>
-          <li><strong>Fuel Type:</strong> {fuel}</li>
-          <li><strong>Drive Type:</strong> {drive_type}</li>
-          <li><strong>Transmission:</strong> {transmission}</li>
-          <li><strong>Horsepower:</strong> {horsepower || 'No information'}</li>
-          <li><strong>Color:</strong> {color}</li>
-          <li><strong>Interior Color:</strong> {interior_color}</li>
-          <li><strong>Interior Material:</strong> {interior_material || 'No information'}</li>
-          <li><strong>Doors:</strong> {doors}</li>
-          <li><strong>Seats:</strong> {seats}</li>
-          <li><strong>Vehicle Type:</strong> {vehicle_type}</li>
-        </ul>
+        <div className="car-description-box">
+          <p>This well-maintained {year} {manufacturer} {model} offers comfort, performance, and style.
+            It's perfect for everyday driving or long trips. Equipped with {horsepower || 'N/A'} HP and a sleek
+            {color || 'N/A'} exterior, this vehicle is ready to hit the road.
+          </p>
+        </div>
+        <table className="spec-table">
+          <tbody>
+            <tr><td><strong>Price:</strong></td><td>{price} €</td></tr>
+            <tr><td><strong>Kilometers:</strong></td><td>{kilometers} km</td></tr>
+            <tr><td><strong>Fuel Type:</strong></td><td>{fuel || 'N/A'}</td></tr>
+            <tr><td><strong>Transmission:</strong></td><td>{transmission || 'N/A'}</td></tr>
+            <tr><td><strong>Drive Type:</strong></td><td>{drive_type || 'N/A'}</td></tr>
+            <tr><td><strong>Horsepower:</strong></td><td>{horsepower || 'N/A'} HP</td></tr>
+            <tr><td><strong>Engine Cubic:</strong></td><td>{engine_cubic || 'N/A'} cc</td></tr>
+            <tr><td><strong>Color:</strong></td><td>{color || 'N/A'}</td></tr>
+            <tr><td><strong>Doors:</strong></td><td>{doors || 'N/A'}</td></tr>
+            <tr><td><strong>Seats:</strong></td><td>{seats || 'N/A'}</td></tr>
+            <tr><td><strong>Interior Material:</strong></td><td>{interior_material || 'N/A'}</td></tr>
+            <tr><td><strong>Interior Color:</strong></td><td>{interior_color || 'N/A'}</td></tr>
+            <tr><td><strong>Vehicle Type:</strong></td><td>{vehicle_type || 'N/A'}</td></tr>
+          </tbody>
+        </table>
+        {features && features.trim() && (
+          <div className="features-grid">
+            <h3>Features</h3>
+            <ul>
+              {features.split(',').map((f, i) => (
+                <li key={i}><span className="check">✓</span> {f.trim()}</li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
       <div className="sticky-contact">
         <ContactSellerCard seller={seller} price={price} />
