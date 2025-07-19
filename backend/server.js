@@ -11,6 +11,18 @@ require('dotenv').config(); // Load environment variables
 const app = express();
 const port = 5000;
 
+// --- Add these lines after app and port ---
+const http = require('http');
+const server = http.createServer(app);
+
+const { Server } = require('socket.io');
+const io = new Server(server, {
+  cors: {
+    origin: 'http://localhost:3000',
+    methods: ['GET', 'POST']
+  }
+});
+
 //  **Serve Uploaded Images**
 app.use('/uploads', express.static('uploads'));
 
@@ -22,6 +34,8 @@ app.use(cors({
 }));
 
 app.use(bodyParser.json());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // **MySQL Database Connection**
 const db = mysql.createConnection({
@@ -439,46 +453,122 @@ app.post('/save-config', authenticateToken, (req, res) => {
 
 // ✅ CREATE MESSAGE ROUTE
 app.post('/api/messages', async (req, res) => {
+  console.log('Received message:', req.body);
+
   const { senderId, receiverId, listingId, message } = req.body;
 
-  if (!senderId || !receiverId || !listingId || !message?.trim()) {
-    return res.status(400).json({ error: 'Missing fields' });
+  if (!senderId || !receiverId || !listingId || !message) {
+    return res.status(400).json({ error: 'Missing required fields' });
   }
 
   try {
-    await db.promise().query(
-      `INSERT INTO chat_messages (sender_id, receiver_id, listing_id, message)
-       VALUES (?, ?, ?, ?)`,
+    // Use .promise() for async/await with mysql2
+    const [result] = await db.promise().execute(
+      'INSERT INTO chat_messages (sender_id, receiver_id, listing_id, message) VALUES (?, ?, ?, ?)',
       [senderId, receiverId, listingId, message]
     );
 
-    res.status(201).json({ success: true });
+    const insertedMessage = {
+      id: result.insertId,
+      sender_id: senderId,
+      receiver_id: receiverId,
+      listing_id: listingId,
+      message,
+      created_at: new Date(),
+    };
+
+    // Emit live message to the receiver
+    io.emit(`receiveMessage-${receiverId}`, insertedMessage);
+
+    res.status(200).json({ success: true, message: insertedMessage });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Database error' });
+    console.error('Failed to save message:', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// GET /api/messages/:userId
+// Get all messages (for debugging)
+app.get('/api/messages', async (req, res) => {
+  try {
+    const [rows] = await db.promise().execute('SELECT * FROM chat_messages');
+    res.json(rows); // Always respond with valid JSON
+  } catch (error) {
+    console.error("Failed to fetch messages:", error);
+    res.status(500).json({ error: "Failed to fetch messages" });
+  }
+});
+
+// Get messages for a specific user (inbox)
 app.get('/api/messages/:userId', async (req, res) => {
   const userId = req.params.userId;
 
   try {
-    const [rows] = await db.promise().query(
-      `SELECT * FROM chat_messages
-       WHERE sender_id = ? OR receiver_id = ?
-       ORDER BY created_at DESC`,
+    const [rows] = await db.promise().execute(
+      `SELECT * FROM chat_messages 
+       WHERE sender_id = ? OR receiver_id = ? 
+       ORDER BY id DESC`,
       [userId, userId]
     );
 
     res.json(rows);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to fetch messages' });
+    console.error('Failed to fetch messages:', err);
+    res.status(500).json({ error: 'Database error' });
   }
 });
 
-//  **Start the Server**
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
+app.get('/api/messages/:listingId', async (req, res) => {
+  const { listingId } = req.params;
+  try {
+    const [rows] = await db.promise().execute(
+      'SELECT * FROM chat_messages WHERE listing_id = ? ORDER BY created_at ASC',
+      [listingId]
+    );
+    res.json({ success: true, messages: rows });
+  } catch (error) {
+    console.error('Failed to fetch messages:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+io.on('connection', (socket) => {
+  console.log('A user connected');
+
+  socket.on('sendMessage', async (data) => {
+    const { senderId, receiverId, listingId, message } = data;
+
+    try {
+      const [result] = await db.promise().execute(
+        'INSERT INTO chat_messages (sender_id, receiver_id, listing_id, message) VALUES (?, ?, ?, ?)',
+        [senderId, receiverId, listingId, message]
+      );
+
+      const newMessage = {
+        id: result.insertId,
+        sender_id: senderId,
+        receiver_id: receiverId,
+        listing_id: listingId,
+        message,
+        created_at: new Date()
+      };
+
+      // Emit to all users in the room for this listing
+      io.to(`listing_${listingId}`).emit('receiveMessage', newMessage);
+
+    } catch (error) {
+      console.error('DB error:', error);
+    }
+  });
+
+  socket.on('joinRoom', (listingId) => {
+    socket.join(`listing_${listingId}`);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('A user disconnected');
+  });
+});
+
+server.listen(port, () => {
+  console.log(`🚀 Server running at http://localhost:${port}`);
 });

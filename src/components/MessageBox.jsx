@@ -1,53 +1,34 @@
-import { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import socket from '../socket'; // Make sure this is your shared socket instance
 
-export default function MessageBox({ senderId, receiverId, listingId }) {
-  const [message, setMessage] = useState('');
-  const [sent, setSent] = useState(false);
+function MessageBox({ listingId, senderId, receiverId }) {
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState('');
 
-  const sendMessage = async () => {
-    if (!message.trim()) return;
+  useEffect(() => {
+    // Join the room for this listing
+    socket.emit('joinRoom', listingId);
 
-    try {
-      const res = await fetch('http://localhost:5000/api/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          senderId: Number(senderId),
-          receiverId: Number(receiverId),
-          listingId: Number(listingId),
-          message
-        })
-      });
+    // Fetch past messages
+    fetch(`http://localhost:5000/api/messages/${listingId}`)
+      .then(res => res.json())
+      .then(data => setMessages(data.messages || []));
 
-      if (res.ok) {
-        setSent(true);
-        setMessage('');
-      } else {
-        console.error('Failed to send message');
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
+    // Listen for new messages
+    socket.on('receiveMessage', (msg) => {
+      setMessages(prev => [...prev, msg]);
+    });
+  }, [listingId]);
 
   return (
     <div className="message-box">
-      {sent ? (
-        <p style={{ color: 'green' }}>Message sent!</p>
-      ) : (
-        <>
-          <textarea
-            placeholder="Write a message..."
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            rows={4}
-            style={{ width: '100%', padding: '8px' }}
-          />
-          <button onClick={sendMessage} style={{ marginTop: '8px' }}>
-            Send
-          </button>
-        </>
-      )}
+      {(messages || []).map((msg) => (
+        <div key={msg.id} className={`message ${msg.sender_id === 1 ? 'sent' : 'received'}`}>
+          <p>{msg.message}</p>
+        </div>
+      ))}
     </div>
   );
-} 
+}
+
+export default MessageBox; 

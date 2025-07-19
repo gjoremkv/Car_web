@@ -1,66 +1,37 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Header from './Header'; // Ensure the path is correct
-import MainSection from './MainSection'; // Import the MainSection component
-import AfterMain from './AfterMain'; // Import the AfterMain component
-import SalesSection from './SalesSection'; // Import the SalesSection component
-import Buy from './Buy'; // Component for /buy route
-
-
-import Info from './Info'; // Component for /info route
-import ListingDetail from './ListingDetail'; // New component for detailed car view
-import AuctionSection from './AuctionSection'; // Import the AuctionSection component
+import Inbox from './components/Inbox.jsx';
+import MessageBox from './components/MessageBox.jsx';
+import Header from './Header.jsx';
+import MainSection from './MainSection.jsx';
+import AfterMain from './AfterMain.jsx';
+import Buy from './Buy.jsx';
+import SalesSection from './SalesSection.jsx';
+import AuctionSection from './AuctionSection.jsx';
+import Info from './Info.jsx';
+import ListingDetail from './ListingDetail.jsx';
 
 function App() {
-  const [currentUser, setCurrentUser] = useState(null);
-
-  useEffect(() => {
-    // Check if user is logged in on app start
-    const token = localStorage.getItem('token');
-    const username = localStorage.getItem('username');
-    const userId = localStorage.getItem('userId');
-    
-    if (token && username && userId) {
-      // You might want to verify the token with your backend here
-      setCurrentUser({ id: parseInt(userId), username, token });
-    }
-  }, []);
-
-  // Listen for storage changes (when user logs in/out in Header)
-  useEffect(() => {
-    const handleStorageChange = () => {
-      const token = localStorage.getItem('token');
-      const username = localStorage.getItem('username');
-      const userId = localStorage.getItem('userId');
-      
-      if (token && username && userId) {
-        setCurrentUser({ id: parseInt(userId), username, token });
-      } else {
-        setCurrentUser(null);
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+  // Simulated logged-in user for testing (replace with real auth later)
+  const user = JSON.parse(localStorage.getItem('user')) || { id: 1, username: 'demo' };
 
   return (
-    <Router>  {/* Wrap your app in Router */}
+    <Router>
       <div className="App">
-        <Header />  {/* The header is constant across all routes */}
-        
-        <Routes>  {/* Define the routes for navigation */}
+        <Header />
+        <Routes>
           <Route path="/" element={
             <>
               <MainSection />
               <AfterMain />
             </>
           } />
-          <Route path="/buy" element={<Buy />} />  {/* Define route for /buy */}
+          <Route path="/buy" element={<Buy />} />
           <Route path="/sell" element={<SalesSection />} />
           <Route path="/auction" element={<AuctionSection />} />
-          <Route path="/info" element={<Info />} />  {/* Define route for /info */}
-          <Route path="/car/:id" element={<ListingDetail currentUser={currentUser} />} />  {/* Pass currentUser prop */}
+          <Route path="/info" element={<Info />} />
+          <Route path="/car/:id" element={<ListingDetail currentUser={user} />} />
+          <Route path="/inbox" element={<Inbox userId={user?.id} />} />
         </Routes>
       </div>
     </Router>

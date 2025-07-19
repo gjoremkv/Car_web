@@ -1,14 +1,28 @@
 import React, { useState } from 'react';
+import socket from '../socket'; // Adjust the path if your socket file is elsewhere
 import './ListingDetail.css';
 
-export default function ContactSellerCard({ seller = {}, price, phone, rating = 4.5 }) {
+export default function ContactSellerCard({ seller = {}, price, phone, rating = 4.5, currentUser = {}, listingId }) {
   const [message, setMessage] = useState('');
 
   const handleSend = () => {
     if (!message.trim()) return;
-    // TODO: Implement send logic (API or socket)
-    alert(`Message sent: ${message}`);
+
+    // Make sure these IDs are correct for your app's data structure
+    const senderId = currentUser.user_id || currentUser.id;
+    const receiverId = seller.user_id || seller.id;
+    // listingId should be passed as a prop
+
+    // Emit the message via Socket.IO
+    socket.emit('sendMessage', {
+      senderId,
+      receiverId,
+      listingId,
+      message,
+    });
+
     setMessage('');
+    // No alert! Optionally, you can trigger a UI update or notification here.
   };
 
   return (
