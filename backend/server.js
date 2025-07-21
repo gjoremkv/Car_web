@@ -532,9 +532,8 @@ app.get('/api/messages/:listingId', async (req, res) => {
 });
 
 io.on('connection', (socket) => {
-  console.log('A user connected');
-
   socket.on('sendMessage', async (data) => {
+    console.log('🔥 Message received from frontend:', data);
     const { senderId, receiverId, listingId, message } = data;
 
     try {
@@ -561,6 +560,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('joinRoom', (listingId) => {
+    console.log(`📥 User joined room listing_${listingId}`);
     socket.join(`listing_${listingId}`);
   });
 

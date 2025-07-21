@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Inbox from './components/Inbox.jsx';
 import MessageBox from './components/MessageBox.jsx';
@@ -10,15 +10,39 @@ import SalesSection from './SalesSection.jsx';
 import AuctionSection from './AuctionSection.jsx';
 import Info from './Info.jsx';
 import ListingDetail from './ListingDetail.jsx';
+import MiniInbox from './components/MiniInbox.jsx';
 
 function App() {
-  // Simulated logged-in user for testing (replace with real auth later)
-  const user = JSON.parse(localStorage.getItem('user')) || { id: 1, username: 'demo' };
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const storedId = localStorage.getItem('userId');
+    const storedUsername = localStorage.getItem('username');
+    if (storedId && storedUsername) {
+      setUser({ id: parseInt(storedId), username: storedUsername });
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleStorage = () => {
+      const updatedId = localStorage.getItem('userId');
+      const updatedUsername = localStorage.getItem('username');
+      if (updatedId && updatedUsername) {
+        setUser({ id: parseInt(updatedId), username: updatedUsername });
+      } else {
+        setUser(null);
+      }
+    };
+
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
 
   return (
     <Router>
       <div className="App">
         <Header />
+        {user && <MiniInbox currentUserId={user.id} />}
         <Routes>
           <Route path="/" element={
             <>

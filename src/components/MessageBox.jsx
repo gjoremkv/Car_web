@@ -1,32 +1,58 @@
 import React, { useEffect, useState } from 'react';
-import socket from '../socket'; // Make sure this is your shared socket instance
+import socket from '../socket';
 
 function MessageBox({ listingId, senderId, receiverId }) {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
 
   useEffect(() => {
-    // Join the room for this listing
     socket.emit('joinRoom', listingId);
 
-    // Fetch past messages
     fetch(`http://localhost:5000/api/messages/${listingId}`)
       .then(res => res.json())
       .then(data => setMessages(data.messages || []));
 
-    // Listen for new messages
-    socket.on('receiveMessage', (msg) => {
+    const handleReceive = (msg) => {
+      console.log('💬 Received on frontend:', msg);
       setMessages(prev => [...prev, msg]);
-    });
+    };
+
+    socket.on('receiveMessage', handleReceive);
+
+    return () => {
+      socket.off('receiveMessage', handleReceive);
+    };
   }, [listingId]);
 
+  const handleSend = () => {
+    if (!newMessage.trim()) return;
+    socket.emit('sendMessage', {
+      senderId,
+      receiverId,
+      listingId,
+      message: newMessage
+    });
+    setNewMessage('');
+  };
+
   return (
-    <div className="message-box">
-      {(messages || []).map((msg) => (
-        <div key={msg.id} className={`message ${msg.sender_id === 1 ? 'sent' : 'received'}`}>
-          <p>{msg.message}</p>
-        </div>
-      ))}
+    <div>
+      <div className="message-box">
+        {messages.map(msg => (
+          <div key={msg.id} className={msg.sender_id === senderId ? 'sent' : 'received'}>
+            {msg.message}
+          </div>
+        ))}
+      </div>
+      <div className="input-row">
+        <input
+          type="text"
+          value={newMessage}
+          onChange={e => setNewMessage(e.target.value)}
+          placeholder="Type a message..."
+        />
+        <button onClick={handleSend}>Send</button>
+      </div>
     </div>
   );
 }
