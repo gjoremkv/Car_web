@@ -53,7 +53,8 @@ export default function ListingDetail({ currentUser }) {
   console.log('currentUser', currentUser, 'seller_id', seller_id, 'car', car);
 
   return (
-    <div className="ListingDetail">
+    <div className="listing-detail-container" style={{ position: 'relative', minHeight: '100vh' }}>
+      {/* Main content column */}
       <div className="main-content">
         <CarImageGallery images={images} />
         <h2>{manufacturer} {model} - {year}</h2>
@@ -63,18 +64,6 @@ export default function ListingDetail({ currentUser }) {
             {color || 'N/A'} exterior, this vehicle is ready to hit the road.
           </p>
         </div>
-        
-        {/* Only show message box if viewing someone else's car */}
-        {currentUser && Number(currentUser.id) !== Number(seller_id) && (
-          <div className="message-section">
-            <h3>Contact Seller</h3>
-            <MessageBox
-              senderId={currentUser.id}
-              receiverId={seller_id}
-              listingId={car?.id}
-            />
-          </div>
-        )}
         
         <table className="spec-table">
           <tbody>
@@ -104,8 +93,33 @@ export default function ListingDetail({ currentUser }) {
           </div>
         )}
       </div>
-      <div className="sticky-contact">
-        <ContactSellerCard seller={seller_id} price={price} />
+
+      {/* Sticky sidebar on the right */}
+      <div className="contact-seller-sidebar">
+        <div className="seller-card">
+          <h3>Private Seller</h3>
+          <p className="location">📍 Location unknown</p>
+          <div className="rating">
+            {'★'.repeat(4)}☆ <span className="rating-number">4.5</span>
+          </div>
+          <hr />
+          <p className="price">{price} €</p>
+
+          {/* Message input area */}
+          <div className="message-box">
+            <MessageBox
+              senderId={currentUser?.id}
+              receiverId={seller_id}
+              listingId={car?.id}
+            />
+          </div>
+
+          {/* Save & Share buttons */}
+          <div className="seller-actions">
+            <button className="save-btn">🔖 Save</button>
+            <button className="share-btn">🔗 Share</button>
+          </div>
+        </div>
       </div>
     </div>
   );
