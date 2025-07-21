@@ -451,6 +451,68 @@ app.post('/save-config', authenticateToken, (req, res) => {
   });
 });
 
+// Start Auction Endpoint
+app.post('/start-auction', authenticateToken, (req, res) => {
+  const { car_id, start_price, duration_hours } = req.body;
+  const seller_id = req.user.id;
+
+  const now = new Date();
+  const end = new Date(now.getTime() + duration_hours * 60 * 60 * 1000);
+
+  const query = `
+    INSERT INTO auctions (car_id, seller_id, start_price, current_bid, start_time, end_time)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `;
+
+  db.query(
+    query,
+    [car_id, seller_id, start_price, start_price, now, end],
+    (err, result) => {
+      if (err) {
+        console.error('❌ Auction creation error:', err);
+        return res.status(500).json({ message: 'Database error' });
+      }
+
+      res.status(201).json({ message: 'Auction started successfully', auction_id: result.insertId });
+    }
+  );
+});
+
+// Place Bid Endpoint
+app.post('/place-bid', authenticateToken, (req, res) => {
+  const { auction_id, bid_amount } = req.body;
+  const user_id = req.user.id;
+
+  db.query(
+    'SELECT current_bid, end_time FROM auctions WHERE auction_id = ?',
+    [auction_id],
+    (err, results) => {
+      const auction = results && results[0];
+      if (err || !auction) return res.status(404).json({ message: 'Auction not found' });
+
+      if (new Date() > new Date(auction.end_time)) {
+        return res.status(400).json({ message: 'Auction has ended' });
+      }
+
+      if (bid_amount <= auction.current_bid) {
+        return res.status(400).json({ message: 'Bid must be higher than current bid' });
+      }
+
+      // Insert the bid
+      const bidQuery = 'INSERT INTO bids (auction_id, user_id, bid_amount) VALUES (?, ?, ?)';
+      db.query(bidQuery, [auction_id, user_id, bid_amount], (err) => {
+        if (err) return res.status(500).json({ message: 'Failed to place bid' });
+
+        // Update auction's current_bid
+        const updateAuction = 'UPDATE auctions SET current_bid = ? WHERE auction_id = ?';
+        db.query(updateAuction, [bid_amount, auction_id], () => {
+          res.status(200).json({ message: 'Bid placed successfully' });
+        });
+      });
+    }
+  );
+});
+
 // ✅ CREATE MESSAGE ROUTE
 app.post('/api/messages', async (req, res) => {
   const { senderId, receiverId, listingId, message } = req.body;
