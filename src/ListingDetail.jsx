@@ -1,14 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import CarImageGallery from './CarImageGallery';
-import ContactSellerCard from './ContactSellerCard';
+import ContactSellerCard from './components/ContactSellerCard';
 import MessageBox from './components/MessageBox';
 import './ListingDetail.css';
+import socket from './socket'; // adjust path if needed
 
 export default function ListingDetail({ currentUser }) {
   const location = useLocation();
   const [car, setCar] = useState({});
   const [images, setImages] = useState([]);
+  const inputRef = useRef();
 
   useEffect(() => {
     const carObj = location.state?.car;
@@ -51,6 +53,20 @@ export default function ListingDetail({ currentUser }) {
 
   // Debug log for troubleshooting message box visibility
   console.log('currentUser', currentUser, 'seller_id', seller_id, 'car', car);
+
+  const handleSend = () => {
+    const text = inputRef.current.value.trim();
+    if (!text) return;
+
+    socket.emit('sendMessage', {
+      senderId: currentUser?.id,
+      receiverId: seller_id,
+      listingId: car?.id,
+      message: text
+    });
+
+    inputRef.current.value = '';
+  };
 
   return (
     <div className="listing-detail-container" style={{ position: 'relative', minHeight: '100vh' }}>
@@ -107,11 +123,12 @@ export default function ListingDetail({ currentUser }) {
 
           {/* Message input area */}
           <div className="message-box">
-            <MessageBox
-              senderId={currentUser?.id}
-              receiverId={seller_id}
-              listingId={car?.id}
+            <input
+              ref={inputRef}
+              type="text"
+              placeholder="Type your message..."
             />
+            <button onClick={handleSend}>Send</button>
           </div>
 
           {/* Save & Share buttons */}

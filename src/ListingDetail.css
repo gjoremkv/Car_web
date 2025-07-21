@@ -371,3 +371,37 @@
 .seller-actions button:hover {
   background: #f4f0fa;
 }
+
+.ContactSellerCardModern {
+  background: white;
+  padding: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.08);
+}
+
+.contact-seller-box {
+  margin-top: 1rem;
+}
+
+.message-input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  margin-bottom: 8px;
+}
+
+.email-btn {
+  background: #e63946;
+  color: white;
+  padding: 10px;
+  width: 100%;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.email-btn:hover {
+  background: #d62839;
+}

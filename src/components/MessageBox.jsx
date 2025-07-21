@@ -26,12 +26,26 @@ function MessageBox({ listingId, senderId, receiverId }) {
 
   const handleSend = () => {
     if (!newMessage.trim()) return;
+
+    // Optimistic UI update
+    const tempMessage = {
+      id: Date.now(),
+      sender_id: senderId,
+      receiver_id: receiverId,
+      listing_id: listingId,
+      message: newMessage,
+      created_at: new Date().toISOString()
+    };
+
+    setMessages(prev => [...prev, tempMessage]);
+
     socket.emit('sendMessage', {
       senderId,
       receiverId,
       listingId,
       message: newMessage
     });
+
     setNewMessage('');
   };
 

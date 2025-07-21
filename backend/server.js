@@ -453,19 +453,20 @@ app.post('/save-config', authenticateToken, (req, res) => {
 
 // ✅ CREATE MESSAGE ROUTE
 app.post('/api/messages', async (req, res) => {
-  console.log('Received message:', req.body);
-
   const { senderId, receiverId, listingId, message } = req.body;
 
-  if (!senderId || !receiverId || !listingId || !message) {
+  console.log("📩 Received POST /api/messages with:", req.body);
+
+  // ✅ Allow listingId to be null/optional
+  if (!senderId || !receiverId || !message) {
+    console.log('❌ Missing required fields:', { senderId, receiverId, message });
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
   try {
-    // Use .promise() for async/await with mysql2
     const [result] = await db.promise().execute(
       'INSERT INTO chat_messages (sender_id, receiver_id, listing_id, message) VALUES (?, ?, ?, ?)',
-      [senderId, receiverId, listingId, message]
+      [senderId, receiverId, listingId || null, message]
     );
 
     const insertedMessage = {
@@ -474,16 +475,16 @@ app.post('/api/messages', async (req, res) => {
       receiver_id: receiverId,
       listing_id: listingId,
       message,
-      created_at: new Date(),
+      created_at: new Date()
     };
 
-    // Emit live message to the receiver
-    io.emit(`receiveMessage-${receiverId}`, insertedMessage);
+    // (Optional but useful) Add a log after insert:
+    console.log('✅ Saved message via REST POST /api/messages:', insertedMessage);
 
-    res.status(200).json({ success: true, message: insertedMessage });
+    res.status(201).json({ success: true, message: insertedMessage });
   } catch (err) {
-    console.error('Failed to save message:', err);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('❌ DB error:', err);
+    res.status(500).json({ error: 'Database error' });
   }
 });
 
@@ -498,26 +499,34 @@ app.get('/api/messages', async (req, res) => {
   }
 });
 
-// Get messages for a specific user (inbox)
+// Enhanced /api/messages/:userId endpoint with JOIN for usernames
 app.get('/api/messages/:userId', async (req, res) => {
   const userId = req.params.userId;
 
   try {
     const [rows] = await db.promise().execute(
-      `SELECT * FROM chat_messages 
-       WHERE sender_id = ? OR receiver_id = ? 
-       ORDER BY id DESC`,
+      `
+      SELECT m.*, 
+             sender.username AS sender_username,
+             receiver.username AS receiver_username
+      FROM chat_messages m
+      JOIN users sender ON m.sender_id = sender.user_id
+      JOIN users receiver ON m.receiver_id = receiver.user_id
+      WHERE m.sender_id = ? OR m.receiver_id = ?
+      ORDER BY m.created_at ASC
+      `,
       [userId, userId]
     );
 
-    res.json(rows);
+    res.json(rows); // Always send valid JSON
   } catch (err) {
     console.error('Failed to fetch messages:', err);
     res.status(500).json({ error: 'Database error' });
   }
 });
 
-app.get('/api/messages/:listingId', async (req, res) => {
+// ✅ RENAME to avoid conflict:
+app.get('/api/listing-messages/:listingId', async (req, res) => {
   const { listingId } = req.params;
   try {
     const [rows] = await db.promise().execute(
@@ -533,14 +542,30 @@ app.get('/api/messages/:listingId', async (req, res) => {
 
 io.on('connection', (socket) => {
   socket.on('sendMessage', async (data) => {
-    console.log('🔥 Message received from frontend:', data);
+    console.log('🔥 Received socket message:', data);
+
     const { senderId, receiverId, listingId, message } = data;
+
+    // ✅ Allow listingId to be null/optional
+    if (!senderId || !receiverId || !message) {
+      return; // Or optionally: socket.emit('error', { error: 'Missing required fields (senderId, receiverId, message)' });
+    }
 
     try {
       const [result] = await db.promise().execute(
         'INSERT INTO chat_messages (sender_id, receiver_id, listing_id, message) VALUES (?, ?, ?, ?)',
-        [senderId, receiverId, listingId, message]
+        [senderId, receiverId, listingId || null, message]
       );
+
+      console.log("✅ Inserted message ID:", result.insertId);
+
+      const [users] = await db.promise().execute(
+        'SELECT username, user_id FROM users WHERE user_id IN (?, ?)',
+        [senderId, receiverId]
+      );
+
+      const senderUsername = users.find(u => u.user_id === senderId)?.username || '';
+      const receiverUsername = users.find(u => u.user_id === receiverId)?.username || '';
 
       const newMessage = {
         id: result.insertId,
@@ -548,14 +573,17 @@ io.on('connection', (socket) => {
         receiver_id: receiverId,
         listing_id: listingId,
         message,
-        created_at: new Date()
+        created_at: new Date(),
+        sender_username: senderUsername,
+        receiver_username: receiverUsername
       };
 
-      // Emit to all users in the room for this listing
-      io.to(`listing_${listingId}`).emit('receiveMessage', newMessage);
+      console.log(`📡 Sent to user_${receiverId}`, newMessage);
 
+      io.to(`user_${receiverId}`).emit(`receiveMessage-${receiverId}`, newMessage);
+      io.to(`user_${senderId}`).emit(`receiveMessage-${senderId}`, newMessage);
     } catch (error) {
-      console.error('DB error:', error);
+      console.error('❌ DB error:', error);
     }
   });
 
@@ -566,6 +594,12 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log('A user disconnected');
+  });
+
+  // Register user to their own room
+  socket.on('registerUser', (userId) => {
+    console.log(`👤 User ${userId} connected`);
+    socket.join(`user_${userId}`);
   });
 });
 

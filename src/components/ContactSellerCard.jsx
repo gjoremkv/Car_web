@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import socket from '../socket';
-import './ListingDetail.css';
+import '../ListingDetail.css';
 
 export default function ContactSellerCard({
   seller = {},
@@ -23,46 +23,46 @@ export default function ContactSellerCard({
       message
     };
 
-    console.log('Sending message:', messageData);
     socket.emit('sendMessage', messageData);
-
-    setMessage('');
+    setMessage(''); // Clear input
   };
 
   return (
     <div className="ContactSellerCardModern">
       <h2>{seller.dealership || 'Private Seller'}</h2>
-      <p className="location">{seller?.location || 'Location unknown'}</p>
+      <p className="location">📍 {seller?.location || 'Location unknown'}</p>
+
       <div className="rating">
         {Array.from({ length: 5 }).map((_, i) => (
           <span key={i} className={i < Math.floor(rating) ? 'star full' : 'star'}>★</span>
         ))}
         <span className="rating-number">{rating.toFixed(1)}</span>
       </div>
+
       <hr />
+
       <p className="price">{price} €</p>
+
       {phone && (
         <div className="phone">
           <span className="label">Tel.:</span>
           <span className="value">{phone}</span>
         </div>
       )}
-      <div className="contact-seller-box" style={{ margin: '1rem 0' }}>
+
+      <div className="contact-seller-box">
         <input
           type="text"
           value={message}
           onChange={e => setMessage(e.target.value)}
-          placeholder="Type your message..."
-          style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #ccc' }}
+          placeholder="Type a message..."
+          className="message-input"
         />
-        <button
-          className="email-btn"
-          onClick={handleSend}
-          style={{ marginTop: '8px', width: '100%' }}
-        >
-          📩 Send Message
+        <button onClick={handleSend} className="email-btn">
+          📩 Send
         </button>
       </div>
+
       <div className="actions">
         <button className="park">🔖 Save</button>
         <button className="share">🔗 Share</button>
