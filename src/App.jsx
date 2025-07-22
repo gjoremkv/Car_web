@@ -11,6 +11,8 @@ import AuctionSection from './AuctionSection.jsx';
 import Info from './Info.jsx';
 import ListingDetail from './ListingDetail.jsx';
 import MiniInbox from './components/MiniInbox.jsx';
+import MyListings from './pages/MyListings';
+import AuctionModal from './components/AuctionModal';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -56,6 +58,7 @@ function App() {
           <Route path="/info" element={<Info />} />
           <Route path="/car/:id" element={<ListingDetail currentUser={user} />} />
           <Route path="/inbox" element={<Inbox userId={user?.id} />} />
+          <Route path="/my-listings" element={<MyListings currentUser={user} />} />
         </Routes>
       </div>
     </Router>

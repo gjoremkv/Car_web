@@ -5,12 +5,14 @@ import ContactSellerCard from './components/ContactSellerCard';
 import MessageBox from './components/MessageBox';
 import './ListingDetail.css';
 import socket from './socket'; // adjust path if needed
+import AuctionModal from './components/AuctionModal';
 
 export default function ListingDetail({ currentUser }) {
   const location = useLocation();
   const [car, setCar] = useState({});
   const [images, setImages] = useState([]);
   const inputRef = useRef();
+  const [selectedCar, setSelectedCar] = useState(null);
 
   useEffect(() => {
     const carObj = location.state?.car;
@@ -68,6 +70,8 @@ export default function ListingDetail({ currentUser }) {
     inputRef.current.value = '';
   };
 
+  const openAuctionModal = (car) => setSelectedCar(car);
+
   return (
     <div className="listing-detail-container" style={{ position: 'relative', minHeight: '100vh' }}>
       {/* Main content column */}
@@ -108,6 +112,9 @@ export default function ListingDetail({ currentUser }) {
             </ul>
           </div>
         )}
+        {currentUser?.id === seller_id && (
+          <button onClick={() => openAuctionModal(car)}>Start Auction</button>
+        )}
       </div>
 
       {/* Sticky sidebar on the right */}
@@ -138,6 +145,9 @@ export default function ListingDetail({ currentUser }) {
           </div>
         </div>
       </div>
+      {selectedCar && (
+        <AuctionModal car={selectedCar} onClose={() => setSelectedCar(null)} />
+      )}
     </div>
   );
 }

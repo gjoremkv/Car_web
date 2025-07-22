@@ -357,24 +357,20 @@ app.get('/car/:id/images', (req, res) => {
 //  **Fetch Cars Listed by Logged-in User**
 app.get('/my-cars', authenticateToken, (req, res) => {
   const sellerId = req.user.id;
+  console.log('[DEBUG] /my-cars called. sellerId:', sellerId);
 
   if (!sellerId) {
-    console.error(" sellerId is missing!");
+    console.error("[DEBUG] sellerId is missing!");
     return res.status(400).json({ message: 'Invalid seller ID' });
   }
   
-  console.log("🔍 Fetching cars for user ID:", sellerId);
-
   const query = 'SELECT * FROM cars WHERE seller_id = ? ORDER BY id DESC';
-
-
   db.query(query, [sellerId], (err, results) => {
     if (err) {
-      console.error(" SQL Error:", err.sqlMessage || err);
+      console.error("[DEBUG] SQL Error:", err.sqlMessage || err);
       return res.status(500).json({ message: 'Database error', error: err.sqlMessage || err });
     }
-    
-    console.log(" Cars fetched for user:", sellerId);
+    console.log('[DEBUG] /my-cars results:', results);
     res.json(results);
   });
 });

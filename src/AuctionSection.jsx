@@ -1,11 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './AuctionSection.css';
+import StartAuctionPanel from './components/StartAuctionPanel';
+
+const TABS = [
+  { key: 'live auctions', label: 'Live Auctions' },
+  { key: 'ending soon', label: 'Ending Soon' },
+  { key: 'my bids', label: 'My Bids' },
+  { key: 'won auctions', label: 'Won Auctions' },
+  { key: 'start new auction', label: 'START NEW AUCTION' }
+];
 
 const AuctionSection = () => {
   const [auctions, setAuctions] = useState([]);
-  const [activeTab, setActiveTab] = useState('live');
+  const [activeTab, setActiveTab] = useState('live auctions');
 
-  useEffect(() => {
+  useState(() => {
     setAuctions([
       {
         id: 1,
@@ -72,40 +81,44 @@ const AuctionSection = () => {
 
         <main className="auction-main">
           <nav className="auction-tabs">
-            {['Live Auctions', 'Ending Soon', 'My Bids', 'Won Auctions', 'Start New Auction'].map((tab) => (
+            {TABS.map((tab) => (
               <button
-                key={tab}
-                className={activeTab === tab.toLowerCase() ? 'active' : ''}
-                onClick={() => setActiveTab(tab.toLowerCase())}
+                key={tab.key}
+                className={activeTab === tab.key ? 'active' : ''}
+                onClick={() => setActiveTab(tab.key)}
               >
-                {tab}
+                {tab.label}
               </button>
             ))}
           </nav>
 
           <div className="auction-listings">
-            {auctions.length === 0 ? (
-              <div className="auction-listings-placeholder">
-                <h3>No auctions live right now</h3>
-                <p>Check back soon or create your own auction listing.</p>
-              </div>
+            {activeTab === 'start new auction' ? (
+              <StartAuctionPanel />
             ) : (
-              auctions.map((car) => (
-                <div className="auction-card" key={car.id}>
-                  <img src={car.image} alt={car.title} className="auction-image" />
-                  <div className="auction-details">
-                    <h4>{car.title}</h4>
-                    <p>{car.engine} | {car.transmission} | {car.fuel}</p>
-                    <p>📍 {car.location}</p>
-                    <div className="auction-bid-row">
-                      <span className="bid-price">€{car.currentBid.toLocaleString()}</span>
-                      <span className="bid-time">{car.timeLeft}</span>
-                    </div>
-                    <p>{car.bids} bids</p>
-                    <button className="place-bid-btn">Place Bid</button>
-                  </div>
+              auctions.length === 0 ? (
+                <div className="auction-listings-placeholder">
+                  <h3>No auctions live right now</h3>
+                  <p>Check back soon or create your own auction listing.</p>
                 </div>
-              ))
+              ) : (
+                auctions.map((car) => (
+                  <div className="auction-card" key={car.id}>
+                    <img src={car.image} alt={car.title} className="auction-image" />
+                    <div className="auction-details">
+                      <h4>{car.title}</h4>
+                      <p>{car.engine} | {car.transmission} | {car.fuel}</p>
+                      <p>📍 {car.location}</p>
+                      <div className="auction-bid-row">
+                        <span className="bid-price">€{car.currentBid.toLocaleString()}</span>
+                        <span className="bid-time">{car.timeLeft}</span>
+                      </div>
+                      <p>{car.bids} bids</p>
+                      <button className="place-bid-btn">Place Bid</button>
+                    </div>
+                  </div>
+                ))
+              )
             )}
           </div>
         </main>
