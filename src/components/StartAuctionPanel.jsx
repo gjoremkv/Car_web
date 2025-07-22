@@ -133,7 +133,7 @@ export default function StartAuctionPanel() {
         </div>
       )}
       {step === 2 && (
-        <div>
+        <div className="auction-form-card-wide" style={{ gridColumn: '1 / -1', justifySelf: 'center' }}>
           <CarForm onSubmit={handleCreateAuctionFromScratch} submitLabel="Create Auction" />
           <button onClick={() => setStep(0)} style={{ marginTop: 16 }}>Back</button>
         </div>

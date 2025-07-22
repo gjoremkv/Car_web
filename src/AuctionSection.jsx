@@ -92,11 +92,13 @@ const AuctionSection = () => {
             ))}
           </nav>
 
-          <div className="auction-listings">
-            {activeTab === 'start new auction' ? (
+          {activeTab === 'start new auction' ? (
+            <div className="auction-form-outer">
               <StartAuctionPanel />
-            ) : (
-              auctions.length === 0 ? (
+            </div>
+          ) : (
+            <div className="auction-listings">
+              {auctions.length === 0 ? (
                 <div className="auction-listings-placeholder">
                   <h3>No auctions live right now</h3>
                   <p>Check back soon or create your own auction listing.</p>
@@ -118,9 +120,9 @@ const AuctionSection = () => {
                     </div>
                   </div>
                 ))
-              )
-            )}
-          </div>
+              )}
+            </div>
+          )}
         </main>
       </div>
     </div>
