@@ -161,48 +161,40 @@ const upload = multer({ storage });
 
 //  **Add a New Car Listing**
 app.post('/add-car', authenticateToken, upload.array('images', 10), (req, res) => {
-  console.log(" Add Car Request Received:", req.body);
-  console.log(" Logged-in User ID:", req.user.id);
+  console.log("Add Car Request Received:", req.body);
+  console.log("Logged-in User ID:", req.user.id);
 
-  // Destructure all fields including new ones
-  const { manufacturer, model, year, price, driveType, fuel, transmission, seats, kilometers, vehicleType, color, interiorColor, interiorMaterial, doors, features, engineCubic, horsepower } = req.body;
+  const {
+    manufacturer, model, year, price, drive_type, fuel, transmission, seats, kilometers,
+    vehicle_type, color, interior_color, interior_material, doors, features, engine_cubic, horsepower
+  } = req.body;
   const sellerId = req.user.id;
 
   if (!req.files || req.files.length === 0) {
-    console.log(" Car images are missing");
+    console.log("Car images are missing");
     return res.status(400).json({ message: 'At least one car image is required' });
   }
 
-  // Use the first image as the main image_path
   const imagePath = `/uploads/${req.files[0].filename}`;
 
-  // Updated SQL to include new fields
   const query = `
     INSERT INTO cars (seller_id, manufacturer, model, year, price, drive_type, fuel, transmission, seats, kilometers, vehicle_type, color, interior_color, interior_material, doors, features, engine_cubic, horsepower, image_path)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
-  // Convert empty string integer fields to null
   const safeInt = (val) => (val === '' ? null : val);
-  const doorsSafe = safeInt(doors);
-  const seatsSafe = safeInt(seats);
-  const yearSafe = safeInt(year);
-  const kilometersSafe = safeInt(kilometers);
-  const priceSafe = safeInt(price);
-  const horsepowerSafe = safeInt(horsepower);
-  const engineCubicSafe = safeInt(engineCubic);
-
   db.query(query, [
-    sellerId, manufacturer, model, yearSafe, priceSafe, driveType, fuel, transmission, seatsSafe, kilometersSafe, vehicleType, color, interiorColor, interiorMaterial, doorsSafe, features, engineCubicSafe, horsepowerSafe, imagePath
+    sellerId, manufacturer, model, safeInt(year), safeInt(price), drive_type, fuel, transmission, safeInt(seats),
+    safeInt(kilometers), vehicle_type, color, interior_color, interior_material, safeInt(doors), features,
+    engine_cubic, horsepower, imagePath
   ], (err, result) => {
     if (err) {
-      console.error(" Database error:", err);
-      return res.status(500).json({ message: 'Database error' });
+      console.error("Database error:", err);
+      return res.status(500).json({ message: 'Database error', error: err });
     }
 
-    console.log(" Car listed successfully with ID:", result.insertId);
+    console.log("Car listed successfully with ID:", result.insertId);
 
-    // Insert all images into car_images table
     req.files.forEach(file => {
       const imgPath = `/uploads/${file.filename}`;
       db.query('INSERT INTO car_images (car_id, image_path) VALUES (?, ?)', [result.insertId, imgPath], (imgErr) => {
@@ -212,28 +204,11 @@ app.post('/add-car', authenticateToken, upload.array('images', 10), (req, res) =
       });
     });
 
-    // Send newly added car data back
     const newCar = {
       id: result.insertId,
       seller_id: sellerId,
-      manufacturer,
-      model,
-      year,
-      price,
-      drive_type: driveType,
-      fuel,
-      transmission,
-      seats,
-      kilometers,
-      vehicle_type: vehicleType,
-      color,
-      interior_color: interiorColor,
-      interior_material: interiorMaterial,
-      doors,
-      features,
-      engine_cubic: engineCubic,
-      horsepower,
-      image_path: imagePath,
+      manufacturer, model, year, price, drive_type, fuel, transmission, seats, kilometers,
+      vehicle_type, color, interior_color, interior_material, doors, features, engine_cubic, horsepower, image_path: imagePath,
     };
 
     res.status(201).json({ message: 'Car listed successfully!', car: newCar });

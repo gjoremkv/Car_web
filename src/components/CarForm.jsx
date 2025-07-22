@@ -18,13 +18,13 @@ export default function CarForm({ onSubmit, submitLabel = "Create Auction" }) {
     drive_type: '',
     fuel: '',
     transmission: '',
-    seats: '',
-    kilometers: '',
+    seats: '4',
+    kilometers: '0',
     vehicle_type: '',
     color: '',
     interior_color: '',
     interior_material: '',
-    doors: '',
+    doors: '4',
     features: [],
     engine_cubic: '',
     horsepower: '',
@@ -50,10 +50,42 @@ export default function CarForm({ onSubmit, submitLabel = "Create Auction" }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    // Debug log all form values
+    console.log('[DEBUG] CarForm submit values:', form);
+
+    // Check required numeric fields
+    const requiredNumeric = ['seats', 'kilometers', 'doors'];
+    for (let field of requiredNumeric) {
+      if (
+        form[field] === '' ||
+        form[field] === null ||
+        isNaN(Number(form[field])) ||
+        Number(form[field]) < 0
+      ) {
+        console.error(`[DEBUG] Required numeric field missing or invalid: ${field}`, form[field]);
+        return;
+      }
+    }
+
+    if (!form.drive_type || !form.fuel || !form.transmission || !form.vehicle_type) {
+      console.error('[DEBUG] Required dropdown missing:', {
+        drive_type: form.drive_type,
+        fuel: form.fuel,
+        transmission: form.transmission,
+        vehicle_type: form.vehicle_type
+      });
+      return;
+    }
+    if (images.length === 0) {
+      console.error('[DEBUG] No images selected');
+      return;
+    }
     const formData = new FormData();
     Object.entries(form).forEach(([key, value]) => {
       if (key === "features") {
         formData.append(key, value.join(','));
+      } else if (requiredNumeric.includes(key)) {
+        formData.append(key, Number(value));
       } else {
         formData.append(key, value);
       }
@@ -102,35 +134,59 @@ export default function CarForm({ onSubmit, submitLabel = "Create Auction" }) {
       </div>
       <div className="form-row">
         <label>Price (€)</label>
-        <input name="price" type="number" value={form.price} onChange={handleChange} required />
+        <input name="price" type="number" value={form.price} onChange={handleChange} required min="1" />
       </div>
       <div className="form-row">
         <label>Drive Type</label>
-        <select name="drive_type" value={form.drive_type} onChange={handleChange}>
+        <select name="drive_type" value={form.drive_type} onChange={handleChange} required>
           <option value="">Select Drive Type</option>
           {driveTypes.map(d => <option key={d} value={d}>{d}</option>)}
         </select>
       </div>
       <div className="form-row">
         <label>Fuel Type</label>
-        <select name="fuel" value={form.fuel} onChange={handleChange}>
+        <select name="fuel" value={form.fuel} onChange={handleChange} required>
           <option value="">Select Fuel Type</option>
           {fuelTypes.map(f => <option key={f} value={f}>{f}</option>)}
         </select>
       </div>
       <div className="form-row">
         <label>Transmission</label>
-        <select name="transmission" value={form.transmission} onChange={handleChange}>
+        <select name="transmission" value={form.transmission} onChange={handleChange} required>
           <option value="">Select Transmission</option>
           {transmissions.map(t => <option key={t} value={t}>{t}</option>)}
         </select>
       </div>
       <div className="form-row">
+        <label>Seats</label>
+        <input name="seats" type="number" value={form.seats} onChange={handleChange} required min="1" />
+      </div>
+      <div className="form-row">
+        <label>Kilometers</label>
+        <input name="kilometers" type="number" value={form.kilometers} onChange={handleChange} required min="0" />
+      </div>
+      <div className="form-row">
         <label>Vehicle Type</label>
-        <select name="vehicle_type" value={form.vehicle_type} onChange={handleChange}>
+        <select name="vehicle_type" value={form.vehicle_type} onChange={handleChange} required>
           <option value="">Select Vehicle Type</option>
           {vehicleTypes.map(v => <option key={v} value={v}>{v}</option>)}
         </select>
+      </div>
+      <div className="form-row">
+        <label>Color</label>
+        <input name="color" value={form.color} onChange={handleChange} />
+      </div>
+      <div className="form-row">
+        <label>Interior Color</label>
+        <input name="interior_color" value={form.interior_color} onChange={handleChange} />
+      </div>
+      <div className="form-row">
+        <label>Interior Material</label>
+        <input name="interior_material" value={form.interior_material} onChange={handleChange} />
+      </div>
+      <div className="form-row">
+        <label>Doors</label>
+        <input name="doors" type="number" value={form.doors} onChange={handleChange} required min="1" />
       </div>
       <div className="form-row">
         <label>Features</label>
@@ -147,10 +203,17 @@ export default function CarForm({ onSubmit, submitLabel = "Create Auction" }) {
           ))}
         </div>
       </div>
-      {/* Add other fields as needed, similar to above */}
+      <div className="form-row">
+        <label>Engine Cubic</label>
+        <input name="engine_cubic" value={form.engine_cubic} onChange={handleChange} />
+      </div>
+      <div className="form-row">
+        <label>Horsepower</label>
+        <input name="horsepower" value={form.horsepower} onChange={handleChange} />
+      </div>
       <div className="form-row">
         <label>Images</label>
-        <input type="file" multiple accept="image/*" onChange={handleImageChange} />
+        <input type="file" multiple accept="image/*" onChange={handleImageChange} required />
       </div>
       <button type="submit" className="auction-submit-btn">{submitLabel}</button>
     </form>

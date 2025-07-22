@@ -47,42 +47,48 @@ export default function StartAuctionPanel() {
 
   // Create car then auction
   const handleCreateAuctionFromScratch = async (formData) => {
-    // 1. Create the car
-    const res = await fetch('http://localhost:5000/add-car', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
-      body: formData,
-    });
-    const data = await res.json();
-    if (!res.ok || !data.car || !data.car.id) {
-      alert('Failed to create car');
-      return;
-    }
-    // 2. Prompt for auction details
-    let startPrice = prompt("Enter start price (€):");
-    let duration = prompt("Enter duration (hours):");
-    if (!startPrice || !duration) {
-      alert('Auction cancelled');
-      return;
-    }
-    // 3. Create the auction
-    const auctionRes = await fetch('http://localhost:5000/start-auction', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        car_id: data.car.id,
-        start_price: Number(startPrice),
-        duration_hours: Number(duration)
-      })
-    });
-    if (auctionRes.ok) {
-      alert('Auction created!');
-      setStep(0);
-    } else {
-      alert('Failed to create auction');
+    const token = localStorage.getItem('token');
+    console.log('[DEBUG] Submitting car for auction...');
+    try {
+      const res = await fetch('http://localhost:5000/add-car', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok || !data.car || !data.car.id) {
+        alert('Failed to create car');
+        return;
+      }
+      // 2. Prompt for auction details
+      let startPrice = prompt("Enter start price (€):");
+      let duration = prompt("Enter duration (hours):");
+      if (!startPrice || !duration) {
+        alert('Auction cancelled');
+        return;
+      }
+      // 3. Create the auction
+      const auctionRes = await fetch('http://localhost:5000/start-auction', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          car_id: data.car.id,
+          start_price: Number(startPrice),
+          duration_hours: Number(duration)
+        })
+      });
+      if (auctionRes.ok) {
+        alert('Auction created!');
+        setStep(0);
+      } else {
+        alert('Failed to create auction');
+      }
+    } catch (error) {
+      console.error('Error creating auction from scratch:', error);
+      alert('Failed to create auction from scratch');
     }
   };
 
