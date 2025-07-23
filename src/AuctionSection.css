@@ -396,3 +396,27 @@ body {
 .back-btn:hover {
   background: #f1f1f1;
 } 
+
+.bid-status {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: capitalize;
+}
+
+.bid-status.winning {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.bid-status.outbid {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.auction-card .auction-details p strong {
+  color: #667eea;
+} 

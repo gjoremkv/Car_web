@@ -4,51 +4,122 @@ import CarForm from './CarForm';
 export default function StartAuctionPanel() {
   const [step, setStep] = useState(0); // 0: choose, 1: existing, 2: new
   const [myCars, setMyCars] = useState([]);
-  const [selectedCar, setSelectedCar] = useState(null);
-  const [startPrice, setStartPrice] = useState('');
-  const [duration, setDuration] = useState(24);
+  const [carInputs, setCarInputs] = useState({}); // Store inputs per car ID
+  const [loading, setLoading] = useState(false);
 
-  const userId = localStorage.getItem('userId');
   const token = localStorage.getItem('token');
 
   useEffect(() => {
-    if (step === 1 && userId) {
+    if (step === 1 && token) {
+      console.log('🔍 Fetching user cars for auction...');
+      setLoading(true);
+      // Clear previous data first
+      setMyCars([]);
+      setCarInputs({});
+      
       fetch(`http://localhost:5000/my-cars`, {
         headers: { Authorization: `Bearer ${token}` }
       })
         .then(res => res.json())
         .then(data => {
-          if (Array.isArray(data)) setMyCars(data);
-          else if (Array.isArray(data.cars)) setMyCars(data.cars);
-          else setMyCars([]);
+          console.log('📦 Received my cars:', data);
+          if (Array.isArray(data)) {
+            // Remove any potential duplicates by ID
+            const uniqueCars = data.filter((car, index, arr) => 
+              arr.findIndex(c => c.id === car.id) === index
+            );
+            console.log(`📋 Found ${uniqueCars.length} unique cars for user`);
+            setMyCars(uniqueCars);
+            // Initialize inputs for each unique car
+            const initialInputs = {};
+            uniqueCars.forEach(car => {
+              initialInputs[car.id] = { startPrice: '', duration: 24 };
+            });
+            setCarInputs(initialInputs);
+          } else if (Array.isArray(data.cars)) {
+            const uniqueCars = data.cars.filter((car, index, arr) => 
+              arr.findIndex(c => c.id === car.id) === index
+            );
+            setMyCars(uniqueCars);
+          } else {
+            setMyCars([]);
+          }
+          setLoading(false);
         })
-        .catch(() => setMyCars([]));
+        .catch(error => {
+          console.error('❌ Error fetching my cars:', error);
+          setMyCars([]);
+          setLoading(false);
+        });
+    } else if (step !== 1) {
+      // Clear data when not on step 1
+      setMyCars([]);
+      setCarInputs({});
     }
-  }, [step, userId, token]);
+  }, [step, token]);
+
+  // Update input for specific car
+  const updateCarInput = (carId, field, value) => {
+    setCarInputs(prev => ({
+      ...prev,
+      [carId]: {
+        ...prev[carId],
+        [field]: value
+      }
+    }));
+  };
 
   // Auction existing car
   const handleAuctionExisting = async (car) => {
-    const res = await fetch('http://localhost:5000/start-auction', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({
-        car_id: car.id,
-        start_price: Number(startPrice),
-        duration_hours: Number(duration)
-      })
-    });
-    if (res.ok) {
-      alert('Auction started!');
-      setStep(0);
-    } else {
-      alert('Failed to start auction');
+    const inputs = carInputs[car.id];
+    const startPrice = Number(inputs?.startPrice);
+    const duration = Number(inputs?.duration);
+
+    // Validation
+    if (!startPrice || startPrice <= 0) {
+      alert('Please enter a valid start price');
+      return;
+    }
+    if (!duration || duration <= 0) {
+      alert('Please enter a valid duration');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      console.log(`🎯 Starting auction for car ${car.id} with price €${startPrice} for ${duration}h`);
+      const res = await fetch('http://localhost:5000/start-auction', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          car_id: car.id,
+          start_price: startPrice,
+          duration_hours: duration
+        })
+      });
+      
+      const responseData = await res.json();
+      console.log('📡 Auction response:', responseData);
+      
+      if (res.ok) {
+        alert(`Auction started successfully for ${car.manufacturer} ${car.model}!`);
+        setStep(0);
+        setCarInputs({}); // Reset inputs
+      } else {
+        alert(`Failed to start auction: ${responseData.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('❌ Error starting auction:', error);
+      alert('Failed to start auction due to network error');
+    } finally {
+      setLoading(false);
     }
   };
 
   // Create car then auction
   const handleCreateAuctionFromScratch = async (formData) => {
-    const token = localStorage.getItem('token');
     console.log('[DEBUG] Submitting car for auction...');
+    setLoading(true);
     try {
       const res = await fetch('http://localhost:5000/add-car', {
         method: 'POST',
@@ -89,6 +160,8 @@ export default function StartAuctionPanel() {
     } catch (error) {
       console.error('Error creating auction from scratch:', error);
       alert('Failed to create auction from scratch');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -97,45 +170,159 @@ export default function StartAuctionPanel() {
       {step === 0 && (
         <div>
           <h2>Start New Auction</h2>
-          <button onClick={() => setStep(1)}>Auction an Existing Listing</button>
-          <button onClick={() => setStep(2)}>Create Auction From Scratch</button>
+          <div style={{ display: 'flex', gap: '16px', marginTop: '20px' }}>
+            <button 
+              onClick={() => setStep(1)}
+              style={{ 
+                padding: '12px 24px', 
+                backgroundColor: '#007bff', 
+                color: 'white', 
+                border: 'none', 
+                borderRadius: '6px',
+                cursor: 'pointer'
+              }}
+            >
+              Auction an Existing Listing
+            </button>
+            <button 
+              onClick={() => setStep(2)}
+              style={{ 
+                padding: '12px 24px', 
+                backgroundColor: '#28a745', 
+                color: 'white', 
+                border: 'none', 
+                borderRadius: '6px',
+                cursor: 'pointer'
+              }}
+            >
+              Create Auction From Scratch
+            </button>
+          </div>
         </div>
       )}
       {step === 1 && (
         <div>
           <h3>Select a car to auction</h3>
-          {(!myCars || myCars.length === 0) && <div>No listings found.</div>}
-          {Array.isArray(myCars) && myCars.map(car => (
-            <div key={car.id} style={{ border: '1px solid #ccc', margin: 8, padding: 8 }}>
-              <div>{car.manufacturer} {car.model} ({car.year})</div>
-              <input
-                type="number"
-                placeholder="Start Price"
-                value={selectedCar?.id === car.id ? startPrice : ''}
-                onChange={e => {
-                  setSelectedCar(car);
-                  setStartPrice(e.target.value);
-                }}
-              />
-              <input
-                type="number"
-                placeholder="Duration (hours)"
-                value={selectedCar?.id === car.id ? duration : 24}
-                onChange={e => {
-                  setSelectedCar(car);
-                  setDuration(e.target.value);
-                }}
-              />
-              <button onClick={() => handleAuctionExisting(car)}>Start Auction</button>
+          {loading && <div>Loading your cars...</div>}
+          {!loading && (!myCars || myCars.length === 0) && (
+            <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>
+              <p>No listings found.</p>
+              <p>You need to create a car listing first before you can auction it.</p>
             </div>
-          ))}
-          <button onClick={() => setStep(0)}>Back</button>
+          )}
+          {!loading && Array.isArray(myCars) && myCars.map(car => {
+            const inputs = carInputs[car.id] || { startPrice: '', duration: 24 };
+            return (
+              <div key={car.id} style={{ 
+                border: '1px solid #ddd', 
+                margin: '16px 0', 
+                padding: '16px', 
+                borderRadius: '8px',
+                backgroundColor: '#f9f9f9'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '12px' }}>
+                  {car.image_path && (
+                    <img 
+                      src={`http://localhost:5000${car.image_path}`} 
+                      alt={`${car.manufacturer} ${car.model}`}
+                      style={{ width: '80px', height: '60px', objectFit: 'cover', borderRadius: '4px' }}
+                    />
+                  )}
+                  <div>
+                    <h4 style={{ margin: '0 0 4px 0' }}>{car.manufacturer} {car.model} ({car.year})</h4>
+                    <p style={{ margin: '0', color: '#666', fontSize: '14px' }}>
+                      Listed for: €{car.price} | {car.fuel} | {car.transmission}
+                    </p>
+                  </div>
+                </div>
+                
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 'bold' }}>
+                      Start Price (€):
+                    </label>
+                    <input
+                      type="number"
+                      placeholder="e.g., 1000"
+                      value={inputs.startPrice}
+                      onChange={e => updateCarInput(car.id, 'startPrice', e.target.value)}
+                      style={{ 
+                        padding: '8px', 
+                        border: '1px solid #ccc', 
+                        borderRadius: '4px',
+                        width: '120px'
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 'bold' }}>
+                      Duration (hours):
+                    </label>
+                    <input
+                      type="number"
+                      placeholder="24"
+                      value={inputs.duration}
+                      onChange={e => updateCarInput(car.id, 'duration', e.target.value)}
+                      style={{ 
+                        padding: '8px', 
+                        border: '1px solid #ccc', 
+                        borderRadius: '4px',
+                        width: '100px'
+                      }}
+                    />
+                  </div>
+                  <button 
+                    onClick={() => handleAuctionExisting(car)}
+                    disabled={loading || !inputs.startPrice || !inputs.duration}
+                    style={{ 
+                      padding: '10px 20px', 
+                      backgroundColor: loading || !inputs.startPrice || !inputs.duration ? '#ccc' : '#dc3545',
+                      color: 'white', 
+                      border: 'none', 
+                      borderRadius: '4px',
+                      cursor: loading || !inputs.startPrice || !inputs.duration ? 'not-allowed' : 'pointer',
+                      marginTop: '20px'
+                    }}
+                  >
+                    {loading ? 'Starting...' : 'Start Auction'}
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+          <button 
+            onClick={() => setStep(0)} 
+            style={{ 
+              marginTop: '20px', 
+              padding: '10px 20px', 
+              backgroundColor: '#6c757d', 
+              color: 'white', 
+              border: 'none', 
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            Back
+          </button>
         </div>
       )}
       {step === 2 && (
         <div className="auction-form-card-wide" style={{ gridColumn: '1 / -1', justifySelf: 'center' }}>
           <CarForm onSubmit={handleCreateAuctionFromScratch} submitLabel="Create Auction" />
-          <button onClick={() => setStep(0)} style={{ marginTop: 16 }}>Back</button>
+          <button 
+            onClick={() => setStep(0)} 
+            style={{ 
+              marginTop: 16, 
+              padding: '10px 20px', 
+              backgroundColor: '#6c757d', 
+              color: 'white', 
+              border: 'none', 
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            Back
+          </button>
         </div>
       )}
     </div>

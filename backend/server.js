@@ -343,14 +343,32 @@ app.get('/my-cars', authenticateToken, (req, res) => {
     return res.status(400).json({ message: 'Invalid seller ID' });
   }
 
-  const query = 'SELECT * FROM cars WHERE seller_id = ? ORDER BY id DESC';
+  // Join with auctions to check if car is already in an active auction
+  const query = `
+    SELECT c.*, 
+           a.auction_id, 
+           a.status as auction_status,
+           CASE 
+             WHEN a.status = 'active' THEN 1 
+             ELSE 0 
+           END as in_active_auction
+    FROM cars c 
+    LEFT JOIN auctions a ON c.id = a.car_id AND a.status = 'active'
+    WHERE c.seller_id = ? 
+    ORDER BY c.id DESC
+  `;
+  
   db.query(query, [sellerId], (err, results) => {
     if (err) {
       console.error("[DEBUG] SQL Error:", err.sqlMessage || err);
       return res.status(500).json({ message: 'Database error', error: err.sqlMessage || err });
     }
-    console.log('[DEBUG] /my-cars results:', results);
-    res.json(results);
+    
+    // Filter out cars that are already in active auctions for the auction panel
+    const availableCars = results.filter(car => !car.in_active_auction);
+    console.log(`[DEBUG] /my-cars results: ${results.length} total cars, ${availableCars.length} available for auction`);
+    
+    res.json(availableCars);
   });
 });
 
@@ -431,24 +449,123 @@ app.post('/start-auction', authenticateToken, (req, res) => {
   const { car_id, start_price, duration_hours } = req.body;
   const seller_id = req.user.id;
 
-  const now = new Date();
-  const end = new Date(now.getTime() + duration_hours * 60 * 60 * 1000);
+  console.log(`🎯 Starting auction - Car ID: ${car_id}, Price: €${start_price}, Duration: ${duration_hours}h, Seller: ${seller_id}`);
 
-  const query = `
-    INSERT INTO auctions (car_id, seller_id, start_price, current_bid, start_time, end_time)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `;
+  // Validation
+  if (!car_id || !start_price || !duration_hours) {
+    console.log('❌ Missing required fields');
+    return res.status(400).json({ message: 'Missing required fields: car_id, start_price, duration_hours' });
+  }
 
-  db.query(
-    query,
-    [car_id, seller_id, start_price, start_price, now, end],
-    (err, result) => {
+  if (start_price <= 0) {
+    console.log('❌ Invalid start price');
+    return res.status(400).json({ message: 'Start price must be greater than 0' });
+  }
+
+  if (duration_hours <= 0 || duration_hours > 168) { // Max 7 days
+    console.log('❌ Invalid duration');
+    return res.status(400).json({ message: 'Duration must be between 1 and 168 hours' });
+  }
+
+  // Check if car exists and belongs to the seller
+  db.query('SELECT * FROM cars WHERE id = ? AND seller_id = ?', [car_id, seller_id], (err, carResults) => {
+    if (err) {
+      console.error('❌ Error checking car ownership:', err);
+      return res.status(500).json({ message: 'Database error checking car' });
+    }
+
+    if (carResults.length === 0) {
+      console.log('❌ Car not found or not owned by user');
+      return res.status(404).json({ message: 'Car not found or you do not own this car' });
+    }
+
+    // Check if car is already in an active auction
+    db.query('SELECT * FROM auctions WHERE car_id = ? AND status = "active"', [car_id], (err, auctionResults) => {
       if (err) {
-        console.error('❌ Auction creation error:', err);
-        return res.status(500).json({ message: 'Database error' });
+        console.error('❌ Error checking existing auctions:', err);
+        return res.status(500).json({ message: 'Database error checking existing auctions' });
       }
 
-      res.status(201).json({ message: 'Auction started successfully', auction_id: result.insertId });
+      if (auctionResults.length > 0) {
+        console.log('❌ Car already in active auction');
+        return res.status(400).json({ message: 'This car is already in an active auction' });
+      }
+
+      const now = new Date();
+      const end = new Date(now.getTime() + duration_hours * 60 * 60 * 1000);
+
+      const query = `
+        INSERT INTO auctions (car_id, seller_id, start_price, current_bid, start_time, end_time, status)
+        VALUES (?, ?, ?, ?, ?, ?, 'active')
+      `;
+
+      db.query(
+        query,
+        [car_id, seller_id, start_price, start_price, now, end],
+        (err, result) => {
+          if (err) {
+            console.error('❌ Auction creation error:', err);
+            return res.status(500).json({ message: 'Database error creating auction' });
+          }
+
+          console.log(`✅ Auction created successfully with ID: ${result.insertId}`);
+          res.status(201).json({ 
+            message: 'Auction started successfully', 
+            auction_id: result.insertId,
+            end_time: end.toISOString()
+          });
+        }
+      );
+    });
+  });
+});
+
+// Get user's bids
+app.get('/my-bids', authenticateToken, (req, res) => {
+  const userId = req.user.id;
+  
+  db.query(
+    `SELECT b.*, a.auction_id, a.start_time, a.end_time, a.status, a.current_bid,
+            c.manufacturer, c.model, c.year, c.image_path,
+            CASE WHEN b.bid_amount = a.current_bid THEN 'winning' ELSE 'outbid' END as bid_status
+     FROM bids b
+     JOIN auctions a ON b.auction_id = a.auction_id
+     JOIN cars c ON a.car_id = c.id
+     WHERE b.user_id = ?
+     ORDER BY b.created_at DESC`,
+    [userId],
+    (err, results) => {
+      if (err) {
+        console.error('Error fetching user bids:', err);
+        return res.status(500).json({ error: 'Failed to fetch bids' });
+      }
+      res.json(results);
+    }
+  );
+});
+
+// Get user's won auctions
+app.get('/won-auctions', authenticateToken, (req, res) => {
+  const userId = req.user.id;
+  
+  db.query(
+    `SELECT DISTINCT a.auction_id, a.start_time, a.end_time, a.status, a.current_bid, a.start_price,
+            c.manufacturer, c.model, c.year, c.image_path, c.engine_cubic, c.transmission, c.fuel,
+            b.bid_amount as winning_bid, b.created_at as bid_date
+     FROM auctions a
+     JOIN bids b ON a.auction_id = b.auction_id
+     JOIN cars c ON a.car_id = c.id
+     WHERE a.status = 'ended' 
+       AND b.user_id = ? 
+       AND b.bid_amount = a.current_bid
+     ORDER BY a.end_time DESC`,
+    [userId],
+    (err, results) => {
+      if (err) {
+        console.error('Error fetching won auctions:', err);
+        return res.status(500).json({ error: 'Failed to fetch won auctions' });
+      }
+      res.json(results);
     }
   );
 });
@@ -481,6 +598,14 @@ app.post('/place-bid', authenticateToken, (req, res) => {
         // Update auction's current_bid
         const updateAuction = 'UPDATE auctions SET current_bid = ? WHERE auction_id = ?';
         db.query(updateAuction, [bid_amount, auction_id], () => {
+          // Emit real-time bid update to all connected clients
+          io.emit('bidUpdate', {
+            auction_id: auction_id,
+            new_bid: bid_amount,
+            bidder_id: user_id
+          });
+          
+          console.log(`💰 New bid placed: €${bid_amount} on auction ${auction_id} by user ${user_id}`);
           res.status(200).json({ message: 'Bid placed successfully' });
         });
       });
