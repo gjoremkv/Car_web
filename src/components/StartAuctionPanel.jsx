@@ -307,22 +307,163 @@ export default function StartAuctionPanel() {
         </div>
       )}
       {step === 2 && (
-        <div className="auction-form-card-wide" style={{ gridColumn: '1 / -1', justifySelf: 'center' }}>
-          <CarForm onSubmit={handleCreateAuctionFromScratch} submitLabel="Create Auction" />
-          <button 
-            onClick={() => setStep(0)} 
-            style={{ 
-              marginTop: 16, 
-              padding: '10px 20px', 
-              backgroundColor: '#6c757d', 
-              color: 'white', 
-              border: 'none', 
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
-          >
-            Back
-          </button>
+        <div style={{ maxWidth: '600px', margin: '0 auto', padding: '20px' }}>
+          <h3 style={{ textAlign: 'center', marginBottom: '30px' }}>Create New Auction</h3>
+          
+          <div style={{ 
+            backgroundColor: '#f8f9fa', 
+            padding: '30px', 
+            borderRadius: '12px',
+            border: '1px solid #e9ecef'
+          }}>
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#495057' }}>
+                Car Details
+              </label>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+                <input
+                  type="text"
+                  placeholder="Manufacturer (e.g., BMW)"
+                  style={{ 
+                    padding: '12px', 
+                    border: '2px solid #dee2e6', 
+                    borderRadius: '8px',
+                    fontSize: '14px'
+                  }}
+                />
+                <input
+                  type="text"
+                  placeholder="Model (e.g., M3)"
+                  style={{ 
+                    padding: '12px', 
+                    border: '2px solid #dee2e6', 
+                    borderRadius: '8px',
+                    fontSize: '14px'
+                  }}
+                />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                <input
+                  type="number"
+                  placeholder="Year (e.g., 2020)"
+                  style={{ 
+                    padding: '12px', 
+                    border: '2px solid #dee2e6', 
+                    borderRadius: '8px',
+                    fontSize: '14px'
+                  }}
+                />
+                <input
+                  type="number"
+                  placeholder="Kilometers"
+                  style={{ 
+                    padding: '12px', 
+                    border: '2px solid #dee2e6', 
+                    borderRadius: '8px',
+                    fontSize: '14px'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#495057' }}>
+                Auction Settings
+              </label>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', color: '#6c757d' }}>
+                    Starting Price (€)
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="1000"
+                    style={{ 
+                      padding: '12px', 
+                      border: '2px solid #dee2e6', 
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      width: '100%'
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', color: '#6c757d' }}>
+                    Duration (hours)
+                  </label>
+                  <select
+                    style={{ 
+                      padding: '12px', 
+                      border: '2px solid #dee2e6', 
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      width: '100%'
+                    }}
+                  >
+                    <option value="24">24 hours</option>
+                    <option value="48">48 hours</option>
+                    <option value="72">72 hours</option>
+                    <option value="168">1 week</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#495057' }}>
+                Car Images
+              </label>
+              <div style={{ 
+                border: '2px dashed #dee2e6', 
+                borderRadius: '8px', 
+                padding: '30px', 
+                textAlign: 'center',
+                backgroundColor: 'white'
+              }}>
+                <p style={{ margin: '0', color: '#6c757d' }}>
+                  📸 Click or drag images here to upload
+                </p>
+                <input 
+                  type="file" 
+                  multiple 
+                  accept="image/*"
+                  style={{ marginTop: '10px' }}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
+              <button 
+                onClick={() => setStep(0)}
+                style={{ 
+                  padding: '12px 30px', 
+                  backgroundColor: '#6c757d', 
+                  color: 'white', 
+                  border: 'none', 
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: 'bold'
+                }}
+              >
+                ← Back
+              </button>
+              <button 
+                style={{ 
+                  padding: '12px 30px', 
+                  backgroundColor: '#28a745', 
+                  color: 'white', 
+                  border: 'none', 
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: 'bold'
+                }}
+              >
+                🚗 Create Auction
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
