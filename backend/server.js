@@ -566,6 +566,81 @@ app.get('/won-auctions', authenticateToken, (req, res) => {
   );
 });
 
+// Get live auctions
+app.get('/auctions/live', (req, res) => {
+  const now = new Date();
+  console.log('🔍 Fetching live auctions...');
+  
+  db.query(
+    `SELECT a.*, c.manufacturer, c.model, c.year, c.price as original_price, c.image_path,
+            c.fuel, c.transmission, c.engine_cubic, c.horsepower, c.color,
+            COUNT(b.bid_id) as bid_count,
+            TIMESTAMPDIFF(MINUTE, NOW(), a.end_time) as minutes_remaining,
+            TIMESTAMPDIFF(HOUR, NOW(), a.end_time) as hours_remaining,
+            CASE 
+              WHEN TIMESTAMPDIFF(MINUTE, NOW(), a.end_time) < 60 
+              THEN CONCAT(TIMESTAMPDIFF(MINUTE, NOW(), a.end_time), 'm left')
+              WHEN TIMESTAMPDIFF(HOUR, NOW(), a.end_time) < 24
+              THEN CONCAT(TIMESTAMPDIFF(HOUR, NOW(), a.end_time), 'h ', 
+                         MOD(TIMESTAMPDIFF(MINUTE, NOW(), a.end_time), 60), 'm left')
+              ELSE CONCAT(TIMESTAMPDIFF(DAY, NOW(), a.end_time), 'd left')
+            END as time_left_formatted
+     FROM auctions a
+     JOIN cars c ON a.car_id = c.id
+     LEFT JOIN bids b ON a.auction_id = b.auction_id
+     WHERE a.status = 'active' AND a.start_time <= ? AND a.end_time > ?
+     GROUP BY a.auction_id
+     ORDER BY a.end_time ASC`,
+    [now, now],
+    (err, results) => {
+      if (err) {
+        console.error('❌ Error fetching live auctions:', err);
+        return res.status(500).json({ error: 'Failed to fetch live auctions' });
+      }
+      console.log(`✅ Found ${results.length} live auctions`);
+      res.json(results);
+    }
+  );
+});
+
+// Get auctions ending soon
+app.get('/auctions/ending-soon', (req, res) => {
+  const now = new Date();
+  const soonThreshold = new Date(now.getTime() + 2 * 60 * 60 * 1000); // 2 hours from now
+  console.log('🔍 Fetching auctions ending soon...');
+  
+  db.query(
+    `SELECT a.*, c.manufacturer, c.model, c.year, c.price as original_price, c.image_path,
+            c.fuel, c.transmission, c.engine_cubic, c.horsepower, c.color,
+            COUNT(b.bid_id) as bid_count,
+            TIMESTAMPDIFF(MINUTE, NOW(), a.end_time) as minutes_remaining,
+            TIMESTAMPDIFF(HOUR, NOW(), a.end_time) as hours_remaining,
+            CASE 
+              WHEN TIMESTAMPDIFF(MINUTE, NOW(), a.end_time) < 60 
+              THEN CONCAT(TIMESTAMPDIFF(MINUTE, NOW(), a.end_time), 'm left')
+              WHEN TIMESTAMPDIFF(HOUR, NOW(), a.end_time) < 24
+              THEN CONCAT(TIMESTAMPDIFF(HOUR, NOW(), a.end_time), 'h ', 
+                         MOD(TIMESTAMPDIFF(MINUTE, NOW(), a.end_time), 60), 'm left')
+              ELSE CONCAT(TIMESTAMPDIFF(DAY, NOW(), a.end_time), 'd left')
+            END as time_left_formatted
+     FROM auctions a
+     JOIN cars c ON a.car_id = c.id
+     LEFT JOIN bids b ON a.auction_id = b.auction_id
+     WHERE a.status = 'active' AND a.start_time <= ? AND a.end_time BETWEEN ? AND ?
+     GROUP BY a.auction_id
+     ORDER BY a.end_time ASC`,
+    [now, now, soonThreshold],
+    (err, results) => {
+      if (err) {
+        console.error('❌ Error fetching ending soon auctions:', err);
+        return res.status(500).json({ error: 'Failed to fetch ending soon auctions' });
+      }
+      console.log(`✅ Found ${results.length} auctions ending soon`);
+      res.json(results);
+    }
+  );
+});
+
 // Place Bid Endpoint
 app.post('/place-bid', authenticateToken, (req, res) => {
   const { auction_id, bid_amount } = req.body;

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './AuctionSection.css';
 import StartAuctionPanel from './components/StartAuctionPanel';
-import BiddingModal from './components/BiddingModal.jsx';
+import BiddingModal from './components/BiddingModal';
 import socket from './socket';
 
 const TABS = [
