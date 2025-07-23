@@ -53,10 +53,6 @@ db.connect((err) => {
   console.log(' Connected to MySQL database.');
 });
 
-// Import and use auction routes
-const auctionRoutes = require('./routes/auction')(db);
-app.use('/', auctionRoutes);
-
 // JWT secret must be set in .env
 const JWT_SECRET = process.env.JWT_SECRET;
 
