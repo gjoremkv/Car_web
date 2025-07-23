@@ -1,0 +1,527 @@
+.main-section {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  height: 38vh;
+  position: relative;
+  background-color: #dddddd;
+  padding-top: 0;
+  margin-top: 0;
+}
+
+.background-image-container {
+  max-width: 1200px;
+  width: 100%;
+  min-height: 390px;
+  max-height: 600px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f5f5f5;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  background-image: url('http://localhost:5000/uploads/vw_background.jpg');
+  background-size: cover;
+  background-position: center;
+  margin: 20px auto 0 auto;
+  padding: 0;
+  box-sizing: border-box;
+  margin-top: 0;
+}
+
+/* Center the content within the background image */
+.content-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  background: none;
+  box-shadow: none;
+  border-radius: 0;
+  margin: 0;
+}
+
+.welcome-box {
+  background: rgba(255, 255, 255, 0.75); /* More glassy, less opaque */
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18), 0 1.5px 8px rgba(0,0,0,0.08);
+  margin: 0 auto;
+  padding: 24px 18px 18px 18px;
+  max-width: 350px;
+  border-radius: 18px;
+  text-align: center;
+  transition: transform 0.3s cubic-bezier(.4,2,.6,1), box-shadow 0.3s, background 0.4s cubic-bezier(.4,2,.6,1);
+  border: 1.5px solid rgba(200,200,200,0.25);
+  backdrop-filter: blur(8px) saturate(1.2);
+  -webkit-backdrop-filter: blur(8px) saturate(1.2);
+  position: relative;
+  z-index: 1001;
+  pointer-events: auto;
+}
+
+.welcome-box.active {
+  background: rgba(255,255,255,1); /* Fully opaque when focused */
+  box-shadow: 0 28px 80px rgba(0,0,0,0.22), 0 2px 12px rgba(0,0,0,0.10);
+}
+
+.welcome-box:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+.welcome-box h2 {
+  font-size: 1.1rem;
+  color: #333;
+  margin-bottom: 10px;
+  font-family: 'Arial', sans-serif;
+}
+
+.welcome-box p {
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 20px;
+  font-family: 'Arial', sans-serif;
+}
+
+.start-configurator-btn {
+  padding: 6px 12px;
+  background-color: #e5e7eb;
+  color: #333;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s;
+  z-index: 1002;
+  pointer-events: auto;
+  position: relative;
+}
+
+.start-configurator-btn:hover {
+  background-color: #bfc2c7;
+  color: #222;
+}
+
+/* Popup Overlay */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+
+body, .main-section, .popup-content {
+  font-family: 'Inter', Arial, sans-serif;
+}
+
+/* Popup Box */
+.popup-content {
+  background: rgba(255,255,255,0.90); /* lighter, more white */
+  border-radius: 24px;
+  box-shadow: 0 8px 32px 0 rgba(31,38,135,0.18);
+  backdrop-filter: blur(18px) saturate(1.2);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  border: 1.5px solid rgba(200,200,200,0.25);
+  padding: 36px 32px 28px 32px;
+  width: 660px; /* wider */
+  max-width: 99vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  text-align: left;
+  transition: box-shadow 0.3s, background 0.3s;
+}
+
+/* Feature Checklist Grid */
+.feature-checklist {
+  border: none;
+  margin: 18px 0 0 0;
+  padding: 0;
+}
+.feature-checklist legend {
+  font-weight: 600;
+  font-size: 1.08rem;
+  margin-bottom: 8px;
+}
+.feature-options-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px 18px;
+  margin-top: 6px;
+}
+.feature-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  background: none;
+  padding: 4px 0;
+  cursor: pointer;
+  user-select: none;
+}
+.feature-checkbox-label input[type="checkbox"] {
+  accent-color: #ffba3a;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+}
+
+.popup-content h2 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 18px;
+  text-align: center;
+  letter-spacing: 0.01em;
+}
+
+.vehicle-popup-icon {
+  display: block;
+  margin: 0 auto 12px auto;
+  width: 48px;
+  height: 48px;
+}
+
+/* Quick Picks */
+.quick-picks {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 18px;
+  justify-content: center;
+}
+.quick-pick-btn {
+  background: #e5e7eb;
+  border: none;
+  border-radius: 18px;
+  padding: 8px 18px;
+  font-size: 1rem;
+  color: #333;
+  cursor: pointer;
+  font-weight: 500;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  transition: background 0.2s, box-shadow 0.2s, color 0.2s;
+}
+.quick-pick-btn:hover {
+  background: #bfc2c7;
+  color: #222;
+}
+
+.filter-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+  min-height: 32px;
+}
+.tag {
+  background: #e5e7eb;
+  color: #333;
+  border-radius: 16px;
+  padding: 6px 14px 6px 12px;
+  font-size: 0.98rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  animation: fadeIn 0.3s;
+}
+.tag-remove {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 1.1em;
+  cursor: pointer;
+  margin-left: 2px;
+  transition: color 0.2s;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+.tag-remove:hover svg circle {
+  fill: #bfc2c7;
+}
+.tag-remove:hover svg path {
+  stroke: #555;
+}
+.tag-remove:hover {
+  color: #e53935;
+}
+
+.slider-row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+.slider-label {
+  min-width: 90px;
+  font-size: 1rem;
+  color: #333;
+}
+.slider {
+  flex: 1;
+  accent-color: #ffba3a;
+  height: 4px;
+  border-radius: 2px;
+  background: #e5e7eb;
+  margin: 0 8px;
+  transition: background 0.2s;
+}
+.slider-value {
+  min-width: 48px;
+  text-align: right;
+  font-size: 1rem;
+  color: #222;
+}
+
+/* Dropdowns */
+.popup-dropdown-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.popup-dropdown {
+  flex: 1;
+  border-radius: 12px;
+  border: 1.5px solid #e5e7eb;
+  padding: 10px 14px;
+  font-size: 1rem;
+  background: #f5f6fa;
+  color: #333;
+  transition: border 0.2s, box-shadow 0.2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.popup-dropdown:focus {
+  border: 1.5px solid #ffba3a;
+  outline: none;
+}
+
+/* Live Count */
+.live-count {
+  text-align: center;
+  font-size: 1.08rem;
+  color: #1db954;
+  font-weight: 600;
+  margin: 18px 0 8px 0;
+  letter-spacing: 0.01em;
+  animation: fadeIn 0.3s;
+}
+
+/* Actions */
+.action-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.action-btn {
+  border: none;
+  border-radius: 12px;
+  padding: 12px 22px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: #e5e7eb;
+  color: #333;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+.action-btn:hover {
+  background: #bfc2c7;
+  color: #222;
+}
+.action-btn.primary {
+  background: #e5e7eb;
+  color: #333;
+}
+.action-btn.primary:hover {
+  background: #bfc2c7;
+  color: #222;
+}
+.action-btn.secondary {
+  background: #d9d9d9;
+  color: #444;
+}
+.action-btn.secondary:hover {
+  background: #cacaca;
+}
+
+/* Close Button */
+.close-popup {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  background: #e5e7eb;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #555;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s;
+}
+.close-popup:hover {
+  background: #bfc2c7;
+  color: #111;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Form rows for better grouping of inputs */
+.form-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.form-row label {
+  width: 48%;
+}
+
+.popup-content input,
+.popup-content select {
+  width: 100%;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Login/Register button inside the popup */
+.popup-content button {
+  padding: 8px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-top: 10px;
+}
+
+.popup-content button:hover {
+  /* No background or color here, use class-based styles */
+}
+
+/* --- Popup Button Styles (New, Wrapper-based) --- */
+
+.quick-pick-btn-wrapper button {
+  background: #e5e7eb;
+  border: none;
+  border-radius: 18px;
+  padding: 8px 18px;
+  font-size: 1rem;
+  color: #333;
+  cursor: pointer;
+  font-weight: 500;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  transition: background 0.2s, box-shadow 0.2s, color 0.2s;
+  margin: 0 4px;
+}
+.quick-pick-btn-wrapper button:hover {
+  background: #bfc2c7;
+  color: #222;
+}
+
+.action-btn-wrapper button {
+  background: #e5e7eb;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 22px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: #333;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  margin: 0 4px;
+}
+.action-btn-wrapper button:hover {
+  background: #bfc2c7;
+  color: #222;
+}
+
+.close-popup-wrapper button {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  background: #e5e7eb;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #555;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s;
+  z-index: 10;
+}
+.close-popup-wrapper button:hover {
+  background: #bfc2c7;
+  color: #111;
+}
+.close-popup-wrapper button svg path {
+  stroke: #111;
+  transition: stroke 0.2s;
+}
+.close-popup-wrapper button:hover svg path {
+  stroke: #e53935;
+}
+
+.tag-remove-btn-wrapper button {
+  background: #e5e7eb;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  font-size: 1.1em;
+  cursor: pointer;
+  margin-left: 2px;
+  transition: background 0.2s, color 0.2s;
+  padding: 0;
+}
+.tag-remove-btn-wrapper button:hover {
+  background: #bfc2c7;
+  color: #e53935;
+}
+
+/* Make the Search button orange */
+.action-btn-wrapper button.action-btn.primary {
+  background: #ff6600;
+  color: #fff;
+}
+.action-btn-wrapper button.action-btn.primary:hover {
+  background: #e65c00;
+  color: #fff;
+}
+
+.main-section.configurator-open .welcome-box {
+  display: none;
+}
+
+.vehicle-icons {
+  margin-left: -1rem;
+  margin-top: -1rem;
+}

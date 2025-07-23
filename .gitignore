@@ -1,0 +1,15 @@
+# Node modules
+node_modules/
+
+# Build and cache
+.cache/
+build/
+dist/
+*.log
+
+# Uploaded files
+backend/uploads/
+
+# OS files
+.DS_Store
+Thumbs.db 

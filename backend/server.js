@@ -1,0 +1,663 @@
+const express = require('express');
+const mysql = require('mysql2');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const multer = require('multer');
+const path = require('path');
+require('dotenv').config(); // Load environment variables
+
+const app = express();
+const port = 5000;
+
+// --- Add these lines after app and port ---
+const http = require('http');
+const server = http.createServer(app);
+
+const { Server } = require('socket.io');
+const io = new Server(server, {
+  cors: {
+    origin: 'http://localhost:3000',
+    methods: ['GET', 'POST']
+  }
+});
+
+//  **Serve Uploaded Images**
+app.use('/uploads', express.static('uploads'));
+
+//  **Enable CORS**
+app.use(cors({
+  origin: 'http://localhost:3000',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
+app.use(bodyParser.json());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// **MySQL Database Connection**
+const db = mysql.createConnection({
+  host: 'localhost',
+  user: process.env.DB_USER, // Only from .env
+  password: process.env.DB_PASSWORD, // Only from .env
+  database: process.env.DB_NAME, // Only from .env
+});
+
+db.connect((err) => {
+  if (err) {
+    console.error(' Database connection error:', err);
+    return;
+  }
+  console.log(' Connected to MySQL database.');
+});
+
+// Import and use auction routes
+const auctionRoutes = require('./routes/auction')(db);
+app.use('/', auctionRoutes);
+
+// JWT secret must be set in .env
+const JWT_SECRET = process.env.JWT_SECRET;
+
+//  **Middleware: Authenticate JWT Token**
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  console.log("🔍 Received Authorization Header:", authHeader);
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    console.log(" No token provided");
+    return res.status(403).json({ message: 'Access denied, no token provided' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  console.log(" Extracted Token:", token);
+  console.log(" Decoded Token Before Verification:", jwt.decode(token));
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) {
+      console.error(" JWT Verification Error:", err);
+      return res.status(403).json({ message: 'Invalid token' });
+    }
+    console.log(" Decoded Token:", user); // Add this line
+  
+    console.log(" Decoded Token on Backend:", user);
+    req.user = user;
+    next();
+  });
+};
+
+//  **User Registration**
+app.post('/register', (req, res) => {
+  const { username, email, password } = req.body;
+  console.log("🔍 Registration Request Received:", { username, email });
+
+  const checkEmailQuery = 'SELECT * FROM users WHERE email = ?';
+  db.query(checkEmailQuery, [email], (err, result) => {
+    if (err) {
+      console.error(" Database error:", err);
+      return res.status(500).json({ message: 'Server error' });
+    }
+
+    if (result.length > 0) {
+      console.log(" Email already registered:", email);
+      return res.status(400).json({ message: 'User already registered' });
+    }
+
+    const hashedPassword = bcrypt.hashSync(password, 10);
+    const query = `
+    INSERT INTO users (username, email, password)
+    VALUES (?, ?, ?)
+    `;
+    
+
+    db.query(query, [username, email, hashedPassword], (err) => {
+      if (err) {
+        console.error(" Error inserting user:", err);
+        return res.status(500).json({ message: 'Server error' });
+      }
+
+      console.log(" User registered successfully:", username);
+      res.status(201).json({ message: 'User registered successfully' });
+    });
+  });
+});
+
+//  **User Login**
+app.post('/login', (req, res) => {
+  const { email, password } = req.body;
+  console.log(" Login Request Received:", email);
+
+  const query = 'SELECT * FROM users WHERE email = ?';
+  db.query(query, [email], (err, result) => {
+    if (err) {
+      console.error(" Database error:", err);
+      return res.status(500).json({ message: 'Server error' });
+    }
+
+    if (result.length === 0) {
+      console.log("Invalid email:", email);
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    const user = result[0];
+    const isPasswordValid = bcrypt.compareSync(password, user.password);
+
+    if (!isPasswordValid) {
+      console.log(" Incorrect password for user:", email);
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    const token = jwt.sign({ id: user.user_id, username: user.username }, JWT_SECRET, { expiresIn: '1h' });
+    console.log(" User logged in successfully:", user.username);
+    res.status(200).json({ token, username: user.username });
+  });
+});
+
+//  **Multer Configuration for Image Uploads**
+const storage = multer.diskStorage({
+  destination: './uploads/',
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname));
+  },
+});
+const upload = multer({ storage });
+
+//  **Add a New Car Listing**
+app.post('/add-car', authenticateToken, upload.array('images', 10), (req, res) => {
+  console.log("Add Car Request Received:", req.body);
+  console.log("Logged-in User ID:", req.user.id);
+
+  const {
+    manufacturer, model, year, price, drive_type, fuel, transmission, seats, kilometers,
+    vehicle_type, color, interior_color, interior_material, doors, features, engine_cubic, horsepower
+  } = req.body;
+  const sellerId = req.user.id;
+
+  if (!req.files || req.files.length === 0) {
+    console.log("Car images are missing");
+    return res.status(400).json({ message: 'At least one car image is required' });
+  }
+
+  const imagePath = `/uploads/${req.files[0].filename}`;
+
+  const query = `
+    INSERT INTO cars (seller_id, manufacturer, model, year, price, drive_type, fuel, transmission, seats, kilometers, vehicle_type, color, interior_color, interior_material, doors, features, engine_cubic, horsepower, image_path)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  const safeInt = (val) => (val === '' ? null : val);
+  db.query(query, [
+    sellerId, manufacturer, model, safeInt(year), safeInt(price), drive_type, fuel, transmission, safeInt(seats),
+    safeInt(kilometers), vehicle_type, color, interior_color, interior_material, safeInt(doors), features,
+    engine_cubic, horsepower, imagePath
+  ], (err, result) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ message: 'Database error', error: err });
+    }
+
+    console.log("Car listed successfully with ID:", result.insertId);
+
+    req.files.forEach(file => {
+      const imgPath = `/uploads/${file.filename}`;
+      db.query('INSERT INTO car_images (car_id, image_path) VALUES (?, ?)', [result.insertId, imgPath], (imgErr) => {
+        if (imgErr) {
+          console.error('Error saving car image:', imgErr);
+        }
+      });
+    });
+
+    const newCar = {
+      id: result.insertId,
+      seller_id: sellerId,
+      manufacturer, model, year, price, drive_type, fuel, transmission, seats, kilometers,
+      vehicle_type, color, interior_color, interior_material, doors, features, engine_cubic, horsepower, image_path: imagePath,
+    };
+
+    res.status(201).json({ message: 'Car listed successfully!', car: newCar });
+  });
+});
+
+//  **Car Search/Filter Endpoint for Configurator**
+app.post('/search-cars', (req, res) => {
+  const { driveType, fuel, transmission, budgetMin, budgetMax, familySize, vehicleType, features } = req.body;
+  let query = 'SELECT * FROM cars WHERE 1=1';
+  const params = [];
+
+  if (driveType) {
+    query += ' AND drive_type = ?';
+    params.push(driveType);
+  }
+  if (fuel) {
+    query += ' AND fuel = ?';
+    params.push(fuel);
+  }
+  if (transmission) {
+    query += ' AND transmission = ?';
+    params.push(transmission);
+  }
+  if (vehicleType) {
+    query += ' AND vehicle_type = ?';
+    params.push(vehicleType);
+  }
+  if (familySize) {
+    query += ' AND seats >= ?';
+    params.push(familySize);
+  }
+  if (budgetMin !== undefined && budgetMin !== null) {
+    query += ' AND price >= ?';
+    params.push(budgetMin);
+  }
+  if (budgetMax !== undefined && budgetMax !== null) {
+    query += ' AND price <= ?';
+    params.push(budgetMax);
+  }
+  if (features && Array.isArray(features) && features.length > 0) {
+    features.forEach(feature => {
+      query += ' AND features LIKE ?';
+      params.push(`%${feature}%`);
+    });
+  }
+
+  db.query(query, params, (err, results) => {
+    if (err) {
+      console.error('Database error:', err);
+      return res.status(500).json({ message: 'Database error' });
+    }
+    if (results.length === 0) {
+      // Explain why no results
+      let explanation = 'No cars match all selected filters. Try relaxing your price or feature requirements.';
+      if (features && features.length > 0) explanation = 'No cars found with all selected features. Try removing some features.';
+      else if (budgetMin > 0 || budgetMax < 50000) explanation = 'No cars found in the selected price range. Try adjusting your budget.';
+      else if (familySize > 5) explanation = 'No cars found with enough seats. Try lowering the family size.';
+      res.json({ cars: [], explanation });
+    } else {
+      res.json(results);
+    }
+  });
+});
+
+//  **Fetch All Cars**
+app.get('/cars', (req, res) => {
+  console.log(" Fetching all cars...");
+  const query = 'SELECT * FROM cars';
+
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error(" Database error:", err);
+      return res.status(500).json({ message: 'Database error' });
+    }
+
+    console.log(" Cars fetched successfully. Count:", results.length);
+    res.json(results);
+  });
+});
+
+//  **Fetch Specific Car Details**
+app.get('/car/:id', (req, res) => {
+  const { id } = req.params;
+  console.log(" Fetching car details for ID:", id);
+
+  const query = 'SELECT * FROM cars WHERE id = ?';
+
+  db.query(query, [id], (err, results) => {
+    if (err) {
+      console.error(" Database error:", err);
+      return res.status(500).json({ message: 'Database error' });
+    }
+
+    if (results.length === 0) {
+      console.log(" Car not found:", id);
+      return res.status(404).json({ message: 'Car not found' });
+    }
+
+    console.log(" Car details fetched:", results[0]);
+    res.json(results[0]);
+  });
+});
+
+// GET /car/:id/images
+app.get('/car/:id/images', (req, res) => {
+  const { id } = req.params;
+  db.query(
+    'SELECT image_path FROM car_images WHERE car_id = ?',
+    [id],
+    (err, rows) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Failed to fetch images' });
+      }
+      res.json(rows);
+    }
+  );
+});
+
+//  **Fetch Cars Listed by Logged-in User**
+app.get('/my-cars', authenticateToken, (req, res) => {
+  const sellerId = req.user.id;
+  console.log('[DEBUG] /my-cars called. sellerId:', sellerId);
+
+  if (!sellerId) {
+    console.error("[DEBUG] sellerId is missing!");
+    return res.status(400).json({ message: 'Invalid seller ID' });
+  }
+
+  const query = 'SELECT * FROM cars WHERE seller_id = ? ORDER BY id DESC';
+  db.query(query, [sellerId], (err, results) => {
+    if (err) {
+      console.error("[DEBUG] SQL Error:", err.sqlMessage || err);
+      return res.status(500).json({ message: 'Database error', error: err.sqlMessage || err });
+    }
+    console.log('[DEBUG] /my-cars results:', results);
+    res.json(results);
+  });
+});
+
+//  **Suggest Car Endpoint for Configurator**
+app.get('/suggest-car', (req, res) => {
+  // Query for most common values
+  const queries = [
+    "SELECT drive_type, COUNT(*) as cnt FROM cars GROUP BY drive_type ORDER BY cnt DESC LIMIT 1",
+    "SELECT fuel, COUNT(*) as cnt FROM cars GROUP BY fuel ORDER BY cnt DESC LIMIT 1",
+    "SELECT transmission, COUNT(*) as cnt FROM cars GROUP BY transmission ORDER BY cnt DESC LIMIT 1",
+    "SELECT vehicle_type, COUNT(*) as cnt FROM cars GROUP BY vehicle_type ORDER BY cnt DESC LIMIT 1",
+    "SELECT seats FROM cars ORDER BY seats",
+    "SELECT price FROM cars ORDER BY price",
+    "SELECT features FROM cars WHERE features IS NOT NULL AND features != ''"
+  ];
+  Promise.all(queries.map(q => new Promise((resolve, reject) => db.query(q, (err, results) => err ? reject(err) : resolve(results)))))
+    .then(([drive, fuel, trans, vtype, seatsArr, priceArr, featuresArr]) => {
+      const suggestion = {};
+      suggestion.driveType = drive[0]?.drive_type || '';
+      suggestion.fuel = fuel[0]?.fuel || '';
+      suggestion.transmission = trans[0]?.transmission || '';
+      suggestion.vehicleType = vtype[0]?.vehicle_type || '';
+      // Median seats
+      if (seatsArr.length > 0) {
+        const mid = Math.floor(seatsArr.length / 2);
+        suggestion.familySize = seatsArr.length % 2 === 0 ? Math.round((seatsArr[mid-1].seats + seatsArr[mid].seats)/2) : seatsArr[mid].seats;
+      } else {
+        suggestion.familySize = 5;
+      }
+      // Price range: 25th to 75th percentile
+      if (priceArr.length > 0) {
+        const q1 = priceArr[Math.floor(priceArr.length * 0.25)]?.price || 0;
+        const q3 = priceArr[Math.floor(priceArr.length * 0.75)]?.price || 50000;
+        suggestion.budgetMin = q1;
+        suggestion.budgetMax = q3;
+      } else {
+        suggestion.budgetMin = 0;
+        suggestion.budgetMax = 50000;
+      }
+      // Most common features
+      const featureCounts = {};
+      featuresArr.forEach(row => {
+        if (row.features) {
+          row.features.split(',').map(f => f.trim()).forEach(f => {
+            if (f) featureCounts[f] = (featureCounts[f] || 0) + 1;
+          });
+        }
+      });
+      const sortedFeatures = Object.entries(featureCounts).sort((a,b) => b[1]-a[1]).map(([f]) => f);
+      suggestion.features = sortedFeatures.slice(0, 3); // Top 3 features
+      res.json(suggestion);
+    })
+    .catch(err => {
+      console.error('Suggest car error:', err);
+      res.status(500).json({ message: 'Failed to suggest car' });
+    });
+});
+
+//  **Save Config Endpoint for Configurator**
+// SQL to create table if needed:
+// CREATE TABLE configurations (user_id INT PRIMARY KEY, config JSON NOT NULL);
+app.post('/save-config', authenticateToken, (req, res) => {
+  const userId = req.user.id;
+  const config = JSON.stringify(req.body);
+  // Upsert: insert or update
+  const query = `INSERT INTO configurations (user_id, config) VALUES (?, ?) ON DUPLICATE KEY UPDATE config = VALUES(config)`;
+  db.query(query, [userId, config], (err) => {
+    if (err) {
+      console.error('Save config error:', err);
+      return res.status(500).json({ message: 'Failed to save configuration' });
+    }
+    res.json({ message: 'Configuration saved' });
+  });
+});
+
+// Start Auction Endpoint
+app.post('/start-auction', authenticateToken, (req, res) => {
+  const { car_id, start_price, duration_hours } = req.body;
+  const seller_id = req.user.id;
+
+  const now = new Date();
+  const end = new Date(now.getTime() + duration_hours * 60 * 60 * 1000);
+
+  const query = `
+    INSERT INTO auctions (car_id, seller_id, start_price, current_bid, start_time, end_time)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `;
+
+  db.query(
+    query,
+    [car_id, seller_id, start_price, start_price, now, end],
+    (err, result) => {
+      if (err) {
+        console.error('❌ Auction creation error:', err);
+        return res.status(500).json({ message: 'Database error' });
+      }
+
+      res.status(201).json({ message: 'Auction started successfully', auction_id: result.insertId });
+    }
+  );
+});
+
+// Place Bid Endpoint
+app.post('/place-bid', authenticateToken, (req, res) => {
+  const { auction_id, bid_amount } = req.body;
+  const user_id = req.user.id;
+
+  db.query(
+    'SELECT current_bid, end_time FROM auctions WHERE auction_id = ?',
+    [auction_id],
+    (err, results) => {
+      const auction = results && results[0];
+      if (err || !auction) return res.status(404).json({ message: 'Auction not found' });
+
+      if (new Date() > new Date(auction.end_time)) {
+        return res.status(400).json({ message: 'Auction has ended' });
+      }
+
+      if (bid_amount <= auction.current_bid) {
+        return res.status(400).json({ message: 'Bid must be higher than current bid' });
+      }
+
+      // Insert the bid
+      const bidQuery = 'INSERT INTO bids (auction_id, user_id, bid_amount) VALUES (?, ?, ?)';
+      db.query(bidQuery, [auction_id, user_id, bid_amount], (err) => {
+        if (err) return res.status(500).json({ message: 'Failed to place bid' });
+
+        // Update auction's current_bid
+        const updateAuction = 'UPDATE auctions SET current_bid = ? WHERE auction_id = ?';
+        db.query(updateAuction, [bid_amount, auction_id], () => {
+          res.status(200).json({ message: 'Bid placed successfully' });
+        });
+      });
+    }
+  );
+});
+
+// ✅ CREATE MESSAGE ROUTE
+app.post('/api/messages', async (req, res) => {
+  const { senderId, receiverId, listingId, message } = req.body;
+
+  console.log("📩 Received POST /api/messages with:", req.body);
+
+  // ✅ Allow listingId to be null/optional
+  if (!senderId || !receiverId || !message) {
+    console.log('❌ Missing required fields:', { senderId, receiverId, message });
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+
+  try {
+    const [result] = await db.promise().execute(
+      'INSERT INTO chat_messages (sender_id, receiver_id, listing_id, message) VALUES (?, ?, ?, ?)',
+      [senderId, receiverId, listingId || null, message]
+    );
+
+    const insertedMessage = {
+      id: result.insertId,
+      sender_id: senderId,
+      receiver_id: receiverId,
+      listing_id: listingId,
+      message,
+      created_at: new Date()
+    };
+
+    // (Optional but useful) Add a log after insert:
+    console.log('✅ Saved message via REST POST /api/messages:', insertedMessage);
+
+    res.status(201).json({ success: true, message: insertedMessage });
+  } catch (err) {
+    console.error('❌ DB error:', err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+// Get all messages (for debugging)
+app.get('/api/messages', async (req, res) => {
+  try {
+    const [rows] = await db.promise().execute('SELECT * FROM chat_messages');
+    res.json(rows); // Always respond with valid JSON
+  } catch (error) {
+    console.error("Failed to fetch messages:", error);
+    res.status(500).json({ error: "Failed to fetch messages" });
+  }
+});
+
+// Enhanced /api/messages/:userId endpoint with JOIN for usernames
+app.get('/api/messages/:userId', async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+    const [rows] = await db.promise().execute(
+      `
+      SELECT m.*, 
+             sender.username AS sender_username,
+             receiver.username AS receiver_username
+      FROM chat_messages m
+      JOIN users sender ON m.sender_id = sender.user_id
+      JOIN users receiver ON m.receiver_id = receiver.user_id
+      WHERE m.sender_id = ? OR m.receiver_id = ?
+      ORDER BY m.created_at ASC
+      `,
+      [userId, userId]
+    );
+
+    res.json(rows); // Always send valid JSON
+  } catch (err) {
+    console.error('Failed to fetch messages:', err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+// ✅ RENAME to avoid conflict:
+app.get('/api/listing-messages/:listingId', async (req, res) => {
+  const { listingId } = req.params;
+  try {
+    const [rows] = await db.promise().execute(
+      'SELECT * FROM chat_messages WHERE listing_id = ? ORDER BY created_at ASC',
+      [listingId]
+    );
+    res.json({ success: true, messages: rows });
+  } catch (error) {
+    console.error('Failed to fetch messages:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+io.on('connection', (socket) => {
+  socket.on('sendMessage', async (data) => {
+    console.log('🔥 Received socket message:', data);
+
+    const { senderId, receiverId, listingId, message } = data;
+
+    // ✅ Allow listingId to be null/optional
+    if (!senderId || !receiverId || !message) {
+      return; // Or optionally: socket.emit('error', { error: 'Missing required fields (senderId, receiverId, message)' });
+    }
+
+    try {
+      const [result] = await db.promise().execute(
+        'INSERT INTO chat_messages (sender_id, receiver_id, listing_id, message) VALUES (?, ?, ?, ?)',
+        [senderId, receiverId, listingId || null, message]
+      );
+
+      console.log("✅ Inserted message ID:", result.insertId);
+
+      const [users] = await db.promise().execute(
+        'SELECT username, user_id FROM users WHERE user_id IN (?, ?)',
+        [senderId, receiverId]
+      );
+
+      const senderUsername = users.find(u => u.user_id === senderId)?.username || '';
+      const receiverUsername = users.find(u => u.user_id === receiverId)?.username || '';
+
+      const newMessage = {
+        id: result.insertId,
+        sender_id: senderId,
+        receiver_id: receiverId,
+        listing_id: listingId,
+        message,
+        created_at: new Date(),
+        sender_username: senderUsername,
+        receiver_username: receiverUsername
+      };
+
+      console.log(`📡 Sent to user_${receiverId}`, newMessage);
+
+      io.to(`user_${receiverId}`).emit(`receiveMessage-${receiverId}`, newMessage);
+      io.to(`user_${senderId}`).emit(`receiveMessage-${senderId}`, newMessage);
+    } catch (error) {
+      console.error('❌ DB error:', error);
+    }
+  });
+
+  socket.on('joinRoom', (listingId) => {
+    console.log(`📥 User joined room listing_${listingId}`);
+    socket.join(`listing_${listingId}`);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('A user disconnected');
+  });
+
+  // Register user to their own room
+  socket.on('registerUser', (userId) => {
+    console.log(`👤 User ${userId} connected`);
+    socket.join(`user_${userId}`);
+  });
+});
+
+// Automatic auction status update
+setInterval(() => {
+  const now = new Date();
+  db.query(
+    `UPDATE auctions
+     SET status = 'ended'
+     WHERE status = 'active' AND end_time <= ?`,
+    [now],
+    (err, result) => {
+      if (err) {
+        console.error('Error updating auction status:', err);
+      } else {
+        console.log('Auction status updated, affected rows:', result.affectedRows);
+      }
+    }
+  );
+}, 60000); // Every 60 seconds
+
+server.listen(port, () => {
+  console.log(`🚀 Server running at http://localhost:${port}`);
+});

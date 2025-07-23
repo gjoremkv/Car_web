@@ -1,0 +1,407 @@
+.ListingDetail {
+  display: flex;
+  gap: 2rem;
+  padding: 2rem;
+  background: #e2e2e2;
+}
+
+.ListingDetail .main-content {
+  width: 65%;
+}
+
+.ListingDetail .sticky-contact {
+  width: 30%;
+  position: sticky;
+  top: 2rem;
+  height: fit-content;
+}
+
+/* Car specs list */
+.car-specs {
+  margin-top: 1.5rem;
+  list-style: none;
+  padding: 0;
+}
+
+.car-specs li {
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+.car-specs li strong {
+  font-weight: bold;
+}
+
+/* Optional: h2 styling */
+.main-content h2 {
+  margin-top: 1rem;
+  font-size: 1.6rem;
+}
+
+.CarImageGallery .main-image {
+  width: 100%;
+  height: 400px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.CarImageGallery .thumbnails {
+  display: flex;
+  margin-top: 1rem;
+  gap: 0.5rem;
+}
+
+.CarImageGallery .thumbnail {
+  width: 80px;
+  height: 60px;
+  object-fit: cover;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.CarImageGallery .thumbnail.selected {
+  border: 2px solid #e63946;
+}
+
+.ContactSellerCard {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+}
+
+.ContactSellerCard button {
+  background: #e63946;
+  color: white;
+  padding: 0.8rem 1.2rem;
+  border: none;
+  border-radius: 6px;
+  margin-top: 1rem;
+  cursor: pointer;
+  width: 100%;
+}
+
+.main-image-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.CarImageGallery .arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 2rem;
+  background: rgba(0, 0, 0, 0.3);
+  color: white;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  z-index: 2;
+  border-radius: 5px;
+}
+
+.CarImageGallery .arrow.left {
+  left: 10px;
+}
+
+.CarImageGallery .arrow.right {
+  right: 10px;
+}
+
+.CarImageGallery .arrow:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.car-description {
+  background: white;
+  padding: 1rem;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+  box-shadow: 0 0 4px rgba(0,0,0,0.05);
+}
+
+.car-specs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem 2rem;
+  font-size: 1rem;
+  background: white;
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 0 4px rgba(0,0,0,0.05);
+}
+
+.car-specs-grid div {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid #eee;
+  padding: 0.3rem 0;
+}
+
+.car-specs-grid strong {
+  color: #444;
+}
+
+.CarImageGallery .main-image-container {
+  position: relative;
+}
+
+.car-description-box {
+  background: white;
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  margin: 1rem 0;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.08);
+  font-size: 1rem;
+}
+
+.spec-table {
+  width: 100%;
+  margin-top: 1rem;
+  background: white;
+  border-radius: 10px;
+  padding: 1rem;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.08);
+  border-collapse: collapse;
+}
+
+.spec-table td {
+  padding: 0.6rem 0.8rem;
+  vertical-align: top;
+}
+
+.features-grid {
+  background: white;
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  margin-top: 1.5rem;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.08);
+}
+
+.features-grid ul {
+  columns: 2;
+  list-style: none;
+  padding: 0;
+}
+
+.features-grid li {
+  margin-bottom: 0.5rem;
+}
+
+.features-grid .check {
+  color: green;
+  margin-right: 0.5rem;
+}
+
+/* Message Section Styling */
+.message-section {
+  background: white;
+  border-radius: 14px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  border: 1px solid #eee;
+}
+
+.message-section h3 {
+  margin: 0;
+  color: #e63946;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.message-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.message-box input[type="text"] {
+  padding: 0.8rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.message-box input[type="text"]:focus {
+  border-color: #e63946;
+}
+
+.message-box button {
+  background: #e63946;
+  color: white;
+  padding: 0.75rem;
+  font-size: 1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.3s;
+}
+
+.message-box button:hover {
+  background: #cf2c3e;
+}
+
+.message-box p {
+  margin: 0;
+  padding: 10px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.listing-detail-container {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1 1 0%;
+  margin-right: 380px; /* leave space for sidebar */
+}
+
+/* Sticky sidebar styles for the message section */
+.contact-seller {
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+  width: 350px;
+  z-index: 10;
+}
+
+.sticky-contact {
+  position: sticky;
+  top: 2rem;
+}
+
+.contact-seller-sidebar {
+  position: fixed;
+  top: 6rem;
+  right: 2rem;
+  width: 320px;
+  z-index: 999;
+}
+
+.seller-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.seller-card h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #e63946;
+}
+
+.seller-card .location {
+  color: #555;
+  font-size: 0.95rem;
+}
+
+.seller-card .rating {
+  font-size: 1.1rem;
+  color: #f5b50a;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.seller-card .rating-number {
+  font-size: 0.9rem;
+  color: #777;
+}
+
+.seller-card .price {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #111;
+  margin-top: -0.5rem;
+}
+
+.seller-card .message-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.seller-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.seller-actions button {
+  flex: 1;
+  padding: 0.6rem;
+  font-weight: bold;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.save-btn {
+  border: 2px solid #800080;
+  color: #800080;
+  background: white;
+}
+
+.share-btn {
+  border: 2px solid #800080;
+  color: #800080;
+  background: white;
+}
+
+.seller-actions button:hover {
+  background: #f4f0fa;
+}
+
+.ContactSellerCardModern {
+  background: white;
+  padding: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.08);
+}
+
+.contact-seller-box {
+  margin-top: 1rem;
+}
+
+.message-input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  margin-bottom: 8px;
+}
+
+.email-btn {
+  background: #e63946;
+  color: white;
+  padding: 10px;
+  width: 100%;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.email-btn:hover {
+  background: #d62839;
+}

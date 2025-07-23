@@ -1,0 +1,26 @@
+.sell-page {
+  padding: 8px;
+}
+
+.info-section {
+  padding: 6px;
+  margin: 4px;
+  border-radius: 4px;
+  width: 38%;
+}
+
+.info-section h2 {
+  font-size: 1.1em;
+  margin-bottom: 4px;
+}
+
+.info-section p, .info-section ul {
+  font-size: 0.9em;
+}
+
+@media screen and (max-width: 768px) {
+  .info-section {
+    width: 100%;
+  }
+}
+  

@@ -1,0 +1,6 @@
+/* src/index.css */
+body, html, #root, .App {
+  margin: 0;
+  padding: 0;
+  background: #dddddd;
+}
