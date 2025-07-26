@@ -11,14 +11,46 @@ function Header() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [username, setUsername] = useState(localStorage.getItem('username') || '');
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));
   const [errorMessage, setErrorMessage] = useState('');
+  const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
     const storedUsername = localStorage.getItem('username');
-    if (storedUsername) {
+    const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('userId');
+    
+    if (storedUsername && token && userId) {
       setUsername(storedUsername);
+      setIsLoggedIn(true);
+    } else {
+      setUsername('');
+      setIsLoggedIn(false);
     }
+
+    // Listen for storage changes (login/logout in other tabs)
+    const handleStorageChange = () => {
+      const newUsername = localStorage.getItem('username');
+      const newToken = localStorage.getItem('token');
+      const newUserId = localStorage.getItem('userId');
+      
+      if (newUsername && newToken && newUserId) {
+        setUsername(newUsername);
+        setIsLoggedIn(true);
+      } else {
+        setUsername('');
+        setIsLoggedIn(false);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   const togglePopup = () => {
@@ -33,20 +65,29 @@ function Header() {
         password,
       });
 
-      const { token } = response.data;
+      const { token, username: responseUsername, userId } = response.data;
+      console.log('Login successful:', { token, username: responseUsername, userId });
+      
       localStorage.setItem('token', token);
+      localStorage.setItem('username', responseUsername);
+      localStorage.setItem('userId', userId); // Store userId for MiniInbox
+      setUsername(responseUsername);
       setIsLoggedIn(true);
-      setShowForm(false);
+      setIsOpen(false); // Close the popup
       setEmail('');
       setPassword('');
+      setErrorMessage(''); // Clear any error messages
+      
+      console.log('Login state updated:', { username: responseUsername, userId, isLoggedIn: true });
     } catch (error) {
-      setError('Login failed');
+      setErrorMessage('Login failed');
       console.error('Error logging in:', error);
     }
   };
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    setErrorMessage(''); // Clear previous errors
     try {
       const response = await axios.post('http://localhost:5000/api/auth/register', {
         first_name: firstName,
@@ -54,10 +95,19 @@ function Header() {
         email,
         password,
       });
+      
+      // Registration successful
+      setErrorMessage('Registration successful! Please login.');
+      setIsLogin(true); // Switch to login form
+      setFirstName('');
+      setLastName('');
+      setEmail('');
+      setPassword('');
     } catch (error) {
       console.log('Error response:', error.response);
-      if (error.response && error.response.data && error.response.data.message) {
-        setErrorMessage(error.response.data.message);
+      if (error.response && error.response.data) {
+        const errorMsg = error.response.data.error || error.response.data.message || 'An unknown error occurred';
+        setErrorMessage(errorMsg);
       } else {
         setErrorMessage('An unknown error occurred');
       }
@@ -69,6 +119,7 @@ function Header() {
     localStorage.removeItem('username');
     localStorage.removeItem('userId');
     setUsername('');
+    setIsLoggedIn(false);
     
     // Dispatch storage event to notify App component
     window.dispatchEvent(new Event('storage'));
@@ -76,6 +127,7 @@ function Header() {
 
   return (
     <header className="header">
+      {console.log('Header render:', { username, isLoggedIn, token: localStorage.getItem('token') })}
       <div className="logo-container">
         <img src={carLogo} alt="vozilo.si" className="logo-image" draggable="false" />
         <span className="logo-text">vozilo.si</span>
@@ -127,7 +179,7 @@ function Header() {
       </nav>
 
       <div className="register-button">
-        {username ? (
+        {(username && isLoggedIn) ? (
           <div className="user-info">
             <span>Welcome, {username}</span>
             <button onClick={handleLogout} className="logout-btn">Logout</button>
@@ -170,12 +222,20 @@ function Header() {
               <div>
                 <h2>Register</h2>
                 <form onSubmit={handleRegister}>
-                  <label>Username:</label>
+                  <label>First Name:</label>
                   <input
                     type="text"
-                    placeholder="Enter your username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="Enter your first name"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    required
+                  />
+                  <label>Last Name:</label>
+                  <input
+                    type="text"
+                    placeholder="Enter your last name"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
                     required
                   />
                   <label>Email:</label>

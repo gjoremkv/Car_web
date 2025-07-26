@@ -1,22 +1,27 @@
 import React, { useState, useEffect } from 'react';
-
-import { Link } from 'react-router-dom'; // Import Link from react-router-dom
+import { Link, useLocation } from 'react-router-dom'; // Import useLocation
+import { popularManufacturers, otherManufacturers } from './data/manufacturers';
+import { modelsByBrand } from './data/modelsByBrand';
 import './Buy.css';
 
-
 const Buy = () => {
+  const location = useLocation();
   const [showMoreFilters, setShowMoreFilters] = useState(false);
   const [manufacturer, setManufacturer] = useState('');
   const [model, setModel] = useState('');
   const [fuel, setFuel] = useState('');
   const [priceFrom, setPriceFrom] = useState('');
   const [priceTo, setPriceTo] = useState('');
+  const [yearFrom, setYearFrom] = useState('');
+  const [yearTo, setYearTo] = useState('');
+  const [kilometers, setKilometers] = useState('');
   const [color, setColor] = useState('');
   const [interiorColor, setInteriorColor] = useState('');
   const [interiorMaterial, setInteriorMaterial] = useState('');
   const [transmission, setTransmission] = useState('');
   const [driveType, setDriveType] = useState('');
   const [doors, setDoors] = useState('');
+  const [vehicleType, setVehicleType] = useState('');
   const [features, setFeatures] = useState({
     airbags: false,
     seatWarmers: false,
@@ -36,23 +41,167 @@ const Buy = () => {
 
   const [carListings, setCarListings] = useState([]);
 
-  useEffect(() => {
-    const fetchCars = () => {
-      fetch("http://localhost:5000/api/cars")
-        .then((response) => response.json())
-        .then((data) => setCarListings(data))
-        .catch((error) => console.error("Error fetching cars:", error));
-    };
-  
-    fetchCars();
-  
-    // Auto-refresh every 10 seconds to check for new cars
-    const interval = setInterval(fetchCars, 10000);
-    
-    return () => clearInterval(interval); // Cleanup interval on component unmount
-  }, []);
-  
+  // Generate years array (last 40 years)
+  const years = Array.from({ length: 40 }, (_, i) => new Date().getFullYear() - i);
 
+  // Function to search cars using backend API
+  const searchCars = async (customFilters = null) => {
+    const filters = customFilters || {
+      manufacturer, model, fuel, transmission, driveType, vehicleType,
+      priceFrom, priceTo, yearFrom, yearTo, kilometers
+    };
+    
+    console.log('🔍 Searching cars with filters:', filters);
+
+    try {
+      const searchData = {
+        manufacturer: filters.manufacturer || undefined,
+        model: filters.model || undefined,
+        fuel: filters.fuel || undefined,
+        transmission: filters.transmission || undefined,
+        driveType: filters.driveType || undefined,
+        vehicleType: filters.vehicleType || undefined,
+        priceFrom: filters.priceFrom || undefined,
+        priceTo: filters.priceTo || undefined,
+        yearFrom: filters.yearFrom || undefined,
+        yearTo: filters.yearTo || undefined,
+        kilometers: filters.kilometers || undefined
+      };
+
+      // Remove undefined values
+      Object.keys(searchData).forEach(key => 
+        searchData[key] === undefined && delete searchData[key]
+      );
+
+      const response = await fetch("http://localhost:5000/api/search/search-cars", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(searchData)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("✅ Search results:", data.length, "cars found");
+      
+      if (Array.isArray(data)) {
+        setCarListings(data);
+      } else {
+        console.warn('Unexpected search data format, setting empty array');
+        setCarListings([]);
+      }
+    } catch (error) {
+      console.error("❌ Error searching cars:", error);
+      setCarListings([]);
+    }
+  };
+
+  // Initial load - fetch all cars or search with URL parameters
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const hasFilters = searchParams.toString().length > 0;
+
+    if (hasFilters) {
+      // If we have URL parameters, perform search
+      searchCars();
+    } else {
+      // Otherwise, fetch all cars
+      const fetchAllCars = async () => {
+        console.log('📋 Fetching all cars...');
+        try {
+          const response = await fetch("http://localhost:5000/api/cars");
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const data = await response.json();
+          
+          if (Array.isArray(data)) {
+            setCarListings(data);
+          } else if (data && data.cars && Array.isArray(data.cars)) {
+            setCarListings(data.cars);
+          } else {
+            console.warn('Unexpected data format, setting empty array');
+            setCarListings([]);
+          }
+        } catch (error) {
+          console.error("Error fetching cars:", error);
+          setCarListings([]);
+        }
+      };
+
+      fetchAllCars();
+    }
+  }, []);
+
+  // Initialize filters from URL parameters
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    console.log('🌐 URL Search string:', location.search);
+    console.log('🔍 All URL parameters:', Object.fromEntries(searchParams));
+    
+    // Collect all URL parameters
+    const urlFilters = {
+      driveType: searchParams.get('driveType') || '',
+      fuel: searchParams.get('fuel') || '',
+      transmission: searchParams.get('transmission') || '',
+      vehicleType: searchParams.get('vehicleType') || '',
+      priceFrom: searchParams.get('priceFrom') || '',
+      priceTo: searchParams.get('priceTo') || '',
+      manufacturer: searchParams.get('manufacturer') || '',
+      model: searchParams.get('model') || '',
+      yearFrom: searchParams.get('yearFrom') || '',
+      yearTo: searchParams.get('yearTo') || '',
+      kilometers: searchParams.get('kilometers') || ''
+    };
+    
+    console.log('📊 Processed URL filters:', urlFilters);
+    
+    // Set state values
+    if (urlFilters.driveType) setDriveType(urlFilters.driveType);
+    if (urlFilters.fuel) setFuel(urlFilters.fuel);
+    if (urlFilters.transmission) setTransmission(urlFilters.transmission);
+    if (urlFilters.vehicleType) setVehicleType(urlFilters.vehicleType);
+    if (urlFilters.priceFrom) setPriceFrom(urlFilters.priceFrom);
+    if (urlFilters.priceTo) setPriceTo(urlFilters.priceTo);
+    if (urlFilters.manufacturer) setManufacturer(urlFilters.manufacturer);
+    if (urlFilters.model) setModel(urlFilters.model);
+    if (urlFilters.yearFrom) setYearFrom(urlFilters.yearFrom);
+    if (urlFilters.yearTo) setYearTo(urlFilters.yearTo);
+    if (urlFilters.kilometers) setKilometers(urlFilters.kilometers);
+    
+    // Auto-expand more filters if requested
+    if (searchParams.get('showMoreFilters') === 'true') {
+      setShowMoreFilters(true);
+    }
+    
+    console.log('📊 Applied URL filters:', Object.fromEntries(searchParams));
+    
+    // Trigger search immediately with URL filters if any exist
+    const hasFilters = Object.values(urlFilters).some(value => value !== '');
+    if (hasFilters) {
+      console.log('🔍 URL filters detected, searching immediately with:', urlFilters);
+      searchCars(urlFilters);
+    } else {
+      console.log('📋 No URL filters found, will fetch all cars');
+    }
+  }, [location.search]);
+
+  // Search whenever filters change (but not on initial load if URL has filters)
+  useEffect(() => {
+    // Don't trigger if this is the initial load with URL parameters
+    const searchParams = new URLSearchParams(location.search);
+    const hasUrlFilters = searchParams.toString().length > 0;
+    
+    if (!hasUrlFilters && (manufacturer || model || fuel || transmission || driveType || vehicleType || 
+        priceFrom || priceTo || yearFrom || yearTo || kilometers)) {
+      console.log('🔍 Filter changed, triggering search...');
+      searchCars();
+    }
+  }, [manufacturer, model, fuel, transmission, driveType, vehicleType, 
+      priceFrom, priceTo, yearFrom, yearTo, kilometers]);
+  
   const toggleMoreFilters = () => {
     setShowMoreFilters(!showMoreFilters);
   };
@@ -63,20 +212,69 @@ const Buy = () => {
       [feature]: !prevFeatures[feature],
     }));
   };
-  const filteredCars = carListings.filter((car) => {
-    return (
-      (!manufacturer || car.manufacturer.toLowerCase() === manufacturer.toLowerCase()) &&
-      (!model || car.model.toLowerCase() === model.toLowerCase()) &&
-      (!fuel || car.fuel.toLowerCase() === fuel.toLowerCase()) &&
-      (!color || car.color?.toLowerCase() === color.toLowerCase()) &&
-      (!transmission || car.transmission.toLowerCase() === transmission.toLowerCase()) &&
-      (!driveType || car.drive_type.toLowerCase() === driveType.toLowerCase()) &&
-      (!priceFrom || parseFloat(car.price) >= parseFloat(priceFrom)) &&
-      (!priceTo || parseFloat(car.price) <= parseFloat(priceTo))
-    );
-  });
   
-  
+  // Clear filters function
+  const clearAllFilters = () => {
+    console.log('🗑️ Clearing all filters');
+    setManufacturer('');
+    setModel('');
+    setFuel('');
+    setTransmission('');
+    setDriveType('');
+    setVehicleType('');
+    setPriceFrom('');
+    setPriceTo('');
+    setYearFrom('');
+    setYearTo('');
+    setKilometers('');
+    setColor('');
+    setInteriorColor('');
+    setInteriorMaterial('');
+    setDoors('');
+    setFeatures({
+      airbags: false,
+      seatWarmers: false,
+      sunroof: false,
+      parkingSensors: false,
+      backupCamera: false,
+      navigation: false,
+      bluetooth: false,
+      heatedSeats: false,
+      cruiseControl: false,
+      laneAssist: false,
+      keylessEntry: false,
+      leatherSeats: false,
+      appleCarPlay: false,
+      androidAuto: false,
+    });
+    
+    // Fetch all cars after clearing filters
+    setTimeout(() => {
+      console.log('📋 Fetching all cars after clearing filters');
+      const fetchAllCars = async () => {
+        try {
+          const response = await fetch("http://localhost:5000/api/cars");
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const data = await response.json();
+          
+          if (Array.isArray(data)) {
+            setCarListings(data);
+          } else if (data && data.cars && Array.isArray(data.cars)) {
+            setCarListings(data.cars);
+          } else {
+            console.warn('Unexpected data format, setting empty array');
+            setCarListings([]);
+          }
+        } catch (error) {
+          console.error("Error fetching cars:", error);
+          setCarListings([]);
+        }
+      };
+      fetchAllCars();
+    }, 100);
+  };
 
   return (
     <div className="buy-page">
@@ -85,22 +283,31 @@ const Buy = () => {
         <div className="filters">
           <div className="filter">
             <label>Manufacturer</label>
-            <select value={manufacturer} onChange={(e) => setManufacturer(e.target.value)}>
-
+            <select value={manufacturer} onChange={(e) => {
+              setManufacturer(e.target.value);
+              setModel(''); // Reset model when manufacturer changes
+            }}>
               <option value="">Any</option>
-              <option value="Volkswagen">Volkswagen</option>
-              <option value="Toyota">Toyota</option>
-              <option value="BMW">BMW</option>
+              <optgroup label="Popular">
+                {popularManufacturers.map(m => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
+              </optgroup>
+              <optgroup label="All Brands A-Z">
+                {otherManufacturers.map(m => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
+              </optgroup>
             </select>
           </div>
 
           <div className="filter">
             <label>Model</label>
-            <select value={model} onChange={(e) => setModel(e.target.value)}>
+            <select value={model} onChange={(e) => setModel(e.target.value)} disabled={!manufacturer}>
               <option value="">Any</option>
-              <option value="Golf">Golf</option>
-              <option value="Corolla">Corolla</option>
-              <option value="X5">X5</option>
+              {manufacturer && modelsByBrand[manufacturer]?.map(m => (
+                <option key={m} value={m}>{m}</option>
+              ))}
             </select>
           </div>
 
@@ -109,9 +316,21 @@ const Buy = () => {
             <select value={fuel} onChange={(e) => setFuel(e.target.value)}>
               <option value="">Any</option>
               <option value="Petrol">Petrol</option>
+              <option value="Gasoline">Gasoline</option>
               <option value="Diesel">Diesel</option>
               <option value="Hybrid">Hybrid</option>
               <option value="Electric">Electric</option>
+            </select>
+          </div>
+
+          <div className="filter">
+            <label>Vehicle Type</label>
+            <select value={vehicleType} onChange={(e) => setVehicleType(e.target.value)}>
+              <option value="">Any</option>
+              <option value="Sedan">Sedan</option>
+              <option value="SUV">SUV</option>
+              <option value="Coupe">Coupe</option>
+              <option value="Van">Van</option>
             </select>
           </div>
 
@@ -139,11 +358,71 @@ const Buy = () => {
           <button className="toggle-more-filters" onClick={toggleMoreFilters}>
             {showMoreFilters ? 'Hide Filters' : 'More Filters'}
           </button>
+          
+          {/* Clear All Filters button */}
+          <button className="clear-filters-btn" onClick={clearAllFilters}>
+            Clear All
+          </button>
+        </div>
+
+        {/* Search Results Summary */}
+        <div className="search-summary">
+          <p>
+            <strong>{carListings.length}</strong> cars found
+            {(manufacturer || model || fuel || vehicleType || priceFrom || priceTo || yearFrom || yearTo || kilometers) && (
+              <span> matching your filters</span>
+            )}
+          </p>
+          {manufacturer && <span className="active-filter">Manufacturer: {manufacturer}</span>}
+          {model && <span className="active-filter">Model: {model}</span>}
+          {fuel && <span className="active-filter">Fuel: {fuel}</span>}
+          {vehicleType && <span className="active-filter">Type: {vehicleType}</span>}
+          {(priceFrom || priceTo) && (
+            <span className="active-filter">
+              Price: €{priceFrom || '0'} - €{priceTo || '∞'}
+            </span>
+          )}
+          {(yearFrom || yearTo) && (
+            <span className="active-filter">
+              Year: {yearFrom || 'Any'} - {yearTo || 'Latest'}
+            </span>
+          )}
+          {kilometers && <span className="active-filter">Max km: {kilometers}</span>}
         </div>
 
         {/* More Filters Section */}
         {showMoreFilters && (
           <div className="more-filters-section">
+            <div className="filter">
+              <label>Year From</label>
+              <select value={yearFrom} onChange={(e) => setYearFrom(e.target.value)}>
+                <option value="">Any</option>
+                {years.map(year => (
+                  <option key={year} value={year}>{year}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="filter">
+              <label>Year To</label>
+              <select value={yearTo} onChange={(e) => setYearTo(e.target.value)}>
+                <option value="">Any</option>
+                {years.map(year => (
+                  <option key={year} value={year}>{year}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="filter">
+              <label>Max Kilometres</label>
+              <input
+                type="number"
+                value={kilometers}
+                placeholder="Max Kilometres"
+                onChange={(e) => setKilometers(e.target.value)}
+              />
+            </div>
+
             <div className="filter">
               <label>Exterior Color</label>
               <select value={color} onChange={(e) => setColor(e.target.value)}>
@@ -271,8 +550,8 @@ const Buy = () => {
       <div className="car-listings-section">
         <h2>Car Listings</h2>
         <div className="car-listings">
-          {filteredCars.length > 0 ? (
-            filteredCars.map(car => (
+          {carListings.length > 0 ? (
+            carListings.map(car => (
               <Link to={`/car/${car.id}`} state={{ car }} style={{ textDecoration: 'none', color: 'inherit' }} key={car.id}>
                 <div className="car-listing">
                 <img src={car.image_path ? `http://localhost:5000${car.image_path}` : 'https://via.placeholder.com/300'} alt={car.model} />

@@ -183,4 +183,265 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Good Deals Today Section */
+.good-deals-section {
+  margin: 2rem auto 1.5rem;
+  max-width: 1000px;
+  padding: 0 1rem;
+}
+
+.good-deals-container {
+  background-color: #fff;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.25rem 1.5rem rgba(0, 0, 0, 0.10);
+  padding: 1.2rem;
+  border: 1px solid #e5e7eb;
+}
+
+.good-deals-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.2rem;
+}
+
+.good-deals-title {
+  font-size: 1.4rem;
+  color: #333;
+  margin: 0;
+  font-weight: 600;
+}
+
+.refresh-deals-btn {
+  background: #f8f9fa;
+  color: #333;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 0.5rem 0.8rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 500;
+}
+
+.refresh-deals-btn:hover {
+  background: #e9ecef;
+  border-color: #ced4da;
+  transform: translateY(-1px);
+}
+
+.good-deals-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.good-deal-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  max-width: 100%;
+  border: 1px solid #f1f3f4;
+}
+
+.good-deal-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  text-decoration: none;
+  color: inherit;
+  border-color: #e5e7eb;
+}
+
+.deal-image {
+  width: 100%;
+  height: 140px;
+  overflow: hidden;
+}
+
+.deal-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.good-deal-card:hover .deal-image img {
+  transform: scale(1.03);
+}
+
+.deal-info {
+  padding: 0.8rem;
+}
+
+.deal-info h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.2;
+}
+
+.deal-year, .deal-km {
+  font-size: 0.75rem;
+  color: #666;
+  margin: 0.2rem 0;
+}
+
+.deal-price {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #2563eb;
+  margin: 0.5rem 0 0 0;
+}
+
+/* Carousel Navigation */
+.carousel-nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+
+.nav-btn {
+  background: #f8f9fa;
+  color: #333;
+  border: 1px solid #e5e7eb;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-btn:hover:not(:disabled) {
+  background: #e9ecef;
+  border-color: #ced4da;
+  transform: scale(1.1);
+}
+
+.nav-btn:disabled {
+  background: #f8f9fa;
+  color: #adb5bd;
+  cursor: not-allowed;
+  transform: none;
+  border-color: #f1f3f4;
+}
+
+.carousel-indicator {
+  font-size: 0.8rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.no-deals {
+  text-align: center;
+  padding: 2rem;
+  color: #6b7280;
+  font-size: 0.9rem;
+  background: #f9fafb;
+  border-radius: 6px;
+  border: 1px solid #f1f3f4;
+}
+
+/* Responsive adjustments for good deals */
+@media (max-width: 768px) {
+  .good-deals-container {
+    padding: 1rem;
+  }
+  
+  .good-deals-cards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.8rem;
+  }
+  
+  .good-deals-header {
+    flex-direction: column;
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+  }
+  
+  .good-deals-title {
+    font-size: 1.2rem;
+    text-align: center;
+  }
+  
+  .refresh-deals-btn {
+    font-size: 0.7rem;
+    padding: 0.4rem 0.7rem;
+    align-self: center;
+  }
+  
+  .deal-image {
+    height: 120px;
+  }
+  
+  .deal-info {
+    padding: 0.6rem;
+  }
+  
+  .deal-info h3 {
+    font-size: 0.9rem;
+  }
+  
+  .deal-price {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .good-deals-section {
+    margin: 1.5rem auto 1rem;
+    padding: 0 0.5rem;
+  }
+  
+  .good-deals-container {
+    padding: 0.8rem;
+  }
+  
+  .good-deals-cards {
+    grid-template-columns: 1fr;
+    gap: 0.8rem;
+  }
+  
+  .carousel-nav {
+    gap: 0.5rem;
+  }
+  
+  .nav-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 0.9rem;
+  }
+  
+  .deal-image {
+    height: 100px;
+  }
+  
+  .deal-info h3 {
+    font-size: 0.85rem;
+  }
+  
+  .deal-year, .deal-km {
+    font-size: 0.7rem;
+  }
+  
+  .deal-price {
+    font-size: 0.95rem;
+  }
+}
   

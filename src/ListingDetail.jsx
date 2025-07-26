@@ -19,10 +19,40 @@ export default function ListingDetail({ currentUser }) {
     if (!carObj || !carObj.id) return;
     setCar(carObj);
     
-    // Use only the main image from the car object
-    if (carObj.image_path) {
-      setImages([`http://localhost:5000${carObj.image_path}`]);
-    }
+    // Fetch all images for this car
+    const fetchImages = async () => {
+      try {
+        const allImages = [];
+        
+        // Add main image if it exists
+        if (carObj.image_path) {
+          allImages.push(`http://localhost:5000${carObj.image_path}`);
+        }
+        
+        // Fetch additional images from car_images table
+        const response = await fetch(`http://localhost:5000/car/${carObj.id}/images`);
+        if (response.ok) {
+          const additionalImages = await response.json();
+          additionalImages.forEach(img => {
+            const imageUrl = `http://localhost:5000${img.image_path}`;
+            // Avoid duplicates
+            if (!allImages.includes(imageUrl)) {
+              allImages.push(imageUrl);
+            }
+          });
+        }
+        
+        setImages(allImages);
+      } catch (error) {
+        console.error('Error fetching images:', error);
+        // Fallback to main image only
+        if (carObj.image_path) {
+          setImages([`http://localhost:5000${carObj.image_path}`]);
+        }
+      }
+    };
+    
+    fetchImages();
   }, [location.state]);
 
   if (!car || !car.id) return <p>Car not found</p>;
@@ -54,6 +84,13 @@ export default function ListingDetail({ currentUser }) {
   const handleSend = () => {
     const text = inputRef.current.value.trim();
     if (!text) return;
+
+    console.log('📤 Sending message:', {
+      senderId: currentUser?.id,
+      receiverId: seller_id,
+      listingId: car?.id,
+      message: text
+    });
 
     socket.emit('sendMessage', {
       senderId: currentUser?.id,
@@ -123,15 +160,32 @@ export default function ListingDetail({ currentUser }) {
           <hr />
           <p className="price">{price} €</p>
 
-          {/* Message input area */}
-          <div className="message-box">
-            <input
-              ref={inputRef}
-              type="text"
-              placeholder="Type your message..."
-            />
-            <button onClick={handleSend}>Send</button>
-          </div>
+          {/* Contact seller message input - only show if logged in and not own listing */}
+          {currentUser && currentUser.id !== seller_id && (
+            <div className="contact-seller-box">
+              <h4>Contact Seller</h4>
+              <input
+                ref={inputRef}
+                type="text"
+                placeholder="Type your message..."
+                className="message-input"
+                onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+              />
+              <button onClick={handleSend} className="send-btn">
+                Send Message
+              </button>
+            </div>
+          )}
+
+          {/* Show login prompt if not logged in */}
+          {!currentUser && (
+            <div className="contact-seller-box">
+              <h4>Contact Seller</h4>
+              <p style={{ fontSize: '14px', color: '#666', textAlign: 'center' }}>
+                Please login to contact the seller
+              </p>
+            </div>
+          )}
 
           {/* Save & Share buttons */}
           <div className="seller-actions">

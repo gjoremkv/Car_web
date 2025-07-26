@@ -7,22 +7,36 @@ function MessageBox({ listingId, senderId, receiverId }) {
 
   useEffect(() => {
     socket.emit('joinRoom', listingId);
+    
+    // Register user for receiving messages
+    if (senderId) {
+      socket.emit('registerUser', senderId);
+    }
 
-    fetch(`http://localhost:5000/api/messages/${listingId}`)
+    fetch(`http://localhost:5000/api/listing-messages/${listingId}`)
       .then(res => res.json())
-      .then(data => setMessages(data.messages || []));
+      .then(data => {
+        console.log('📬 Fetched messages:', data);
+        setMessages(data.messages || []);
+      })
+      .catch(err => {
+        console.error('Error fetching messages:', err);
+        setMessages([]);
+      });
 
     const handleReceive = (msg) => {
       console.log('💬 Received on frontend:', msg);
       setMessages(prev => [...prev, msg]);
     };
 
-    socket.on('receiveMessage', handleReceive);
+    // Listen for user-specific message events
+    const eventName = `receiveMessage-${senderId}`;
+    socket.on(eventName, handleReceive);
 
     return () => {
-      socket.off('receiveMessage', handleReceive);
+      socket.off(eventName, handleReceive);
     };
-  }, [listingId]);
+  }, [listingId, senderId]);
 
   const handleSend = () => {
     if (!newMessage.trim()) return;

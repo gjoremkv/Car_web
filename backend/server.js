@@ -146,7 +146,7 @@ app.post('/login', (req, res) => {
 
     const token = jwt.sign({ id: user.user_id, username: user.username }, JWT_SECRET, { expiresIn: '1h' });
     console.log(" User logged in successfully:", user.username);
-    res.status(200).json({ token, username: user.username });
+    res.status(200).json({ token, username: user.username, userId: user.user_id });
   });
 });
 
@@ -165,8 +165,8 @@ app.post('/add-car', authenticateToken, upload.array('images', 10), (req, res) =
   console.log("Logged-in User ID:", req.user.id);
 
   const {
-    manufacturer, model, year, price, drive_type, fuel, transmission, seats, kilometers,
-    vehicle_type, color, interior_color, interior_material, doors, features, engine_cubic, horsepower
+    manufacturer, model, year, price, driveType, fuel, transmission, seats, kilometers,
+    vehicleType, color, interior_color, interior_material, doors, features, engineCubic, horsepower
   } = req.body;
   const sellerId = req.user.id;
 
@@ -177,20 +177,30 @@ app.post('/add-car', authenticateToken, upload.array('images', 10), (req, res) =
 
   const imagePath = `/uploads/${req.files[0].filename}`;
 
+  // Handle field mapping and ensure required fields have defaults
+  const drive_type = driveType || 'FWD'; // Default to FWD if not provided
+  const vehicle_type = vehicleType || 'Sedan'; // Default to Sedan if not provided
+  const fuelType = fuel || 'Gasoline'; // Default fuel type
+  const transmissionType = transmission || 'Manual'; // Default transmission
+
+  console.log("Mapped values:", { drive_type, vehicle_type, fuelType, transmissionType });
+
   const query = `
     INSERT INTO cars (seller_id, manufacturer, model, year, price, drive_type, fuel, transmission, seats, kilometers, vehicle_type, color, interior_color, interior_material, doors, features, engine_cubic, horsepower, image_path)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
-  const safeInt = (val) => (val === '' ? null : val);
+  const safeInt = (val) => (val === '' || val === null || val === undefined ? null : parseInt(val) || null);
+  const safeString = (val) => (val === '' || val === null || val === undefined ? null : val);
+  
   db.query(query, [
-    sellerId, manufacturer, model, safeInt(year), safeInt(price), drive_type, fuel, transmission, safeInt(seats),
-    safeInt(kilometers), vehicle_type, color, interior_color, interior_material, safeInt(doors), features,
-    engine_cubic, horsepower, imagePath
+    sellerId, manufacturer || '', model || '', safeInt(year), safeInt(price), drive_type, fuelType, transmissionType, safeInt(seats),
+    safeInt(kilometers), vehicle_type, safeString(color), safeString(interior_color), safeString(interior_material), safeInt(doors), safeString(features),
+    safeString(engineCubic), safeString(horsepower), imagePath
   ], (err, result) => {
     if (err) {
       console.error("Database error:", err);
-      return res.status(500).json({ message: 'Database error', error: err });
+      return res.status(500).json({ message: 'Database error', error: err.message });
     }
 
     console.log("Car listed successfully with ID:", result.insertId);
@@ -207,8 +217,8 @@ app.post('/add-car', authenticateToken, upload.array('images', 10), (req, res) =
     const newCar = {
       id: result.insertId,
       seller_id: sellerId,
-      manufacturer, model, year, price, drive_type, fuel, transmission, seats, kilometers,
-      vehicle_type, color, interior_color, interior_material, doors, features, engine_cubic, horsepower, image_path: imagePath,
+      manufacturer, model, year, price, drive_type, fuel: fuelType, transmission: transmissionType, seats, kilometers,
+      vehicle_type, color, interior_color, interior_material, doors, features, engine_cubic: engineCubic, horsepower, image_path: imagePath,
     };
 
     res.status(201).json({ message: 'Car listed successfully!', car: newCar });
@@ -861,31 +871,46 @@ server.listen(port, () => {
 // API Routes with /api prefix
 // Auth routes
 app.post('/api/auth/register', (req, res) => {
-  const { username, email, password } = req.body;
-  console.log("🔍 Registration Request Received:", { username, email });
+  const { first_name, last_name, email, password } = req.body;
+  const username = `${first_name} ${last_name}`.trim(); // Combine first and last name
+  console.log("🔍 Registration Request Received:", { first_name, last_name, email });
 
-  if (!username || !email || !password) {
+  if (!first_name || !last_name || !email || !password) {
     return res.status(400).json({ error: "All fields are required" });
   }
 
-  bcrypt.hash(password, 10, (err, hashedPassword) => {
+  // Check if email already exists
+  const checkEmailQuery = 'SELECT * FROM users WHERE email = ?';
+  db.query(checkEmailQuery, [email], (err, result) => {
     if (err) {
-      console.error(" Hashing Error:", err);
-      return res.status(500).json({ error: "Failed to hash password" });
+      console.error(" Database error:", err);
+      return res.status(500).json({ error: 'Server error' });
     }
 
-    const sql = "INSERT INTO users (username, email, password) VALUES (?, ?, ?)";
-    db.query(sql, [username, email, hashedPassword], (err, result) => {
+    if (result.length > 0) {
+      console.log(" Email already registered:", email);
+      return res.status(400).json({ error: 'Email already registered' });
+    }
+
+    bcrypt.hash(password, 10, (err, hashedPassword) => {
       if (err) {
-        console.error(" Database Error:", err);
-        if (err.code === 'ER_DUP_ENTRY') {
-          return res.status(400).json({ error: "Username or email already exists" });
-        }
-        return res.status(500).json({ error: "Failed to register user" });
+        console.error(" Hashing Error:", err);
+        return res.status(500).json({ error: "Failed to hash password" });
       }
 
-      console.log("✅ User Registered Successfully:", result.insertId);
-      res.status(201).json({ message: "User registered successfully" });
+      const sql = "INSERT INTO users (username, email, password) VALUES (?, ?, ?)";
+      db.query(sql, [username, email, hashedPassword], (err, result) => {
+        if (err) {
+          console.error(" Database Error:", err);
+          if (err.code === 'ER_DUP_ENTRY') {
+            return res.status(400).json({ error: "Username or email already exists" });
+          }
+          return res.status(500).json({ error: "Failed to register user" });
+        }
+
+        console.log("✅ User Registered Successfully:", result.insertId);
+        res.status(201).json({ message: "User registered successfully" });
+      });
     });
   });
 });
@@ -920,9 +945,9 @@ app.post('/api/auth/login', (req, res) => {
         return res.status(400).json({ error: "Invalid credentials" });
       }
 
-      const token = jwt.sign({ id: user.id, email: user.email }, 'your_jwt_secret', { expiresIn: '1h' });
+      const token = jwt.sign({ id: user.user_id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
       console.log("✅ Login Successful for:", user.email);
-      res.json({ token, username: user.username });
+      res.json({ token, username: user.username, userId: user.user_id });
     });
   });
 });
@@ -932,13 +957,13 @@ app.get('/api/cars', (req, res) => {
   const sql = `
     SELECT c.*, u.username 
     FROM cars c 
-    LEFT JOIN users u ON c.user_id = u.id 
-    ORDER BY c.created_at DESC
+    LEFT JOIN users u ON c.seller_id = u.user_id 
+    ORDER BY c.id DESC
   `;
   
   db.query(sql, (err, results) => {
     if (err) {
-      console.error(' Database Error:', err);
+      console.error('Database Error:', err);
       return res.status(500).json({ error: 'Failed to fetch cars' });
     }
     
@@ -949,11 +974,11 @@ app.get('/api/cars', (req, res) => {
 
 app.get('/api/cars/my-cars', authenticateToken, (req, res) => {
   const userId = req.user.id;
-  const sql = "SELECT * FROM cars WHERE user_id = ? ORDER BY created_at DESC";
+  const sql = "SELECT * FROM cars WHERE seller_id = ? ORDER BY id DESC";
   
   db.query(sql, [userId], (err, results) => {
     if (err) {
-      console.error(' Database Error:', err);
+      console.error('Database Error:', err);
       return res.status(500).json({ error: 'Failed to fetch user cars' });
     }
     
@@ -964,16 +989,31 @@ app.get('/api/cars/my-cars', authenticateToken, (req, res) => {
 
 app.post('/api/cars', authenticateToken, upload.array('images', 10), (req, res) => {
   const userId = req.user.id;
-  const { manufacturer, model, year, price, fuel, transmission, drive_type, color, kilometers, seats, features, vehicle_type } = req.body;
+  const { manufacturer, model, year, price, fuel, transmission, driveType, color, kilometers, seats, features, vehicleType } = req.body;
+  
+  console.log("API Car Request Received:", req.body);
+  console.log("Logged-in User ID:", userId);
+  
+  // Handle field mapping and ensure required fields have defaults
+  const drive_type = driveType || 'FWD';
+  const vehicle_type = vehicleType || 'Sedan';
+  const fuelType = fuel || 'Gasoline';
+  const transmissionType = transmission || 'Manual';
+  
+  console.log("API Mapped values:", { drive_type, vehicle_type, fuelType, transmissionType });
+  
   const imagePath = req.files && req.files.length > 0 ? `/uploads/${req.files[0].filename}` : null;
 
-  const sql = `INSERT INTO cars (user_id, manufacturer, model, year, price, fuel, transmission, drive_type, color, kilometers, seats, features, vehicle_type, image_path) 
+  const sql = `INSERT INTO cars (seller_id, manufacturer, model, year, price, fuel, transmission, drive_type, color, kilometers, seats, features, vehicle_type, image_path) 
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
   
-  db.query(sql, [userId, manufacturer, model, year, price, fuel, transmission, drive_type, color, kilometers, seats, features, vehicle_type, imagePath], (err, result) => {
+  const safeString = (val) => (val === '' || val === null || val === undefined ? null : val);
+  const safeInt = (val) => (val === '' || val === null || val === undefined ? null : parseInt(val) || null);
+  
+  db.query(sql, [userId, manufacturer || '', model || '', safeInt(year), safeInt(price), fuelType, transmissionType, drive_type, safeString(color), safeInt(kilometers), safeInt(seats), safeString(features), vehicle_type, imagePath], (err, result) => {
     if (err) {
-      console.error(' Database Error:', err);
-      return res.status(500).json({ error: 'Failed to add car' });
+      console.error('Database Error:', err);
+      return res.status(500).json({ error: 'Failed to add car', details: err.message });
     }
     
     console.log("✅ Car Added Successfully:", result.insertId);
@@ -985,7 +1025,7 @@ app.post('/api/cars', authenticateToken, upload.array('images', 10), (req, res) 
 app.post('/api/search/search-cars', (req, res) => {
   const { manufacturer, model, fuel, transmission, driveType, vehicleType, budgetMin, budgetMax, familySize, features, priceFrom, priceTo, yearFrom, yearTo, kilometers } = req.body;
   
-  let sql = `SELECT c.*, u.username FROM cars c LEFT JOIN users u ON c.user_id = u.id WHERE 1=1`;
+  let sql = `SELECT c.*, u.username FROM cars c LEFT JOIN users u ON c.seller_id = u.user_id WHERE 1=1`;
   let params = [];
 
   if (manufacturer) {
@@ -1037,7 +1077,7 @@ app.post('/api/search/search-cars', (req, res) => {
     params.push(familySize);
   }
 
-  sql += ` ORDER BY c.created_at DESC`;
+  sql += ` ORDER BY c.id DESC`;
 
   db.query(sql, params, (err, results) => {
     if (err) {
@@ -1090,7 +1130,7 @@ app.get('/api/auctions/my-bids', authenticateToken, (req, res) => {
   const sql = `
     SELECT a.*, c.manufacturer, c.model, c.year, c.image_path, b.bid_amount, b.created_at as bid_time
     FROM bids b
-    JOIN auctions a ON b.auction_id = a.id
+    JOIN auctions a ON b.auction_id = a.auction_id
     JOIN cars c ON a.car_id = c.id
     WHERE b.user_id = ?
     ORDER BY b.created_at DESC
@@ -1109,11 +1149,16 @@ app.get('/api/auctions/my-bids', authenticateToken, (req, res) => {
 app.get('/api/auctions/won-auctions', authenticateToken, (req, res) => {
   const userId = req.user.id;
   const sql = `
-    SELECT a.*, c.manufacturer, c.model, c.year, c.image_path
-    FROM auctions a
-    JOIN cars c ON a.car_id = c.id
-    WHERE a.winner_id = ? AND a.status = 'completed'
-    ORDER BY a.end_time DESC
+    SELECT DISTINCT a.auction_id, a.start_time, a.end_time, a.status, a.current_bid, a.start_price,
+            c.manufacturer, c.model, c.year, c.image_path, c.engine_cubic, c.transmission, c.fuel,
+            b.bid_amount as winning_bid, b.created_at as bid_date
+     FROM auctions a
+     JOIN bids b ON a.auction_id = b.auction_id
+     JOIN cars c ON a.car_id = c.id
+     WHERE a.status = 'ended' 
+       AND b.user_id = ? 
+       AND b.bid_amount = a.current_bid
+     ORDER BY a.end_time DESC
   `;
   
   db.query(sql, [userId], (err, results) => {
@@ -1130,23 +1175,49 @@ app.post('/api/auctions/place-bid', authenticateToken, (req, res) => {
   const userId = req.user.id;
   const { auction_id, bid_amount } = req.body;
   
-  const bidSql = `INSERT INTO bids (auction_id, user_id, bid_amount) VALUES (?, ?, ?)`;
-  const updateAuctionSql = `UPDATE auctions SET current_price = ? WHERE id = ?`;
+  // First check if auction exists and is still active
+  const checkAuctionSql = `SELECT * FROM auctions WHERE auction_id = ? AND status = 'active' AND end_time > NOW()`;
   
-  db.query(bidSql, [auction_id, userId, bid_amount], (err, result) => {
+  db.query(checkAuctionSql, [auction_id], (err, auctionResults) => {
     if (err) {
-      console.error(' Bid Error:', err);
-      return res.status(500).json({ error: 'Failed to place bid' });
+      console.error(' Auction Check Error:', err);
+      return res.status(500).json({ error: 'Failed to verify auction' });
     }
     
-    db.query(updateAuctionSql, [bid_amount, auction_id], (err) => {
+    if (auctionResults.length === 0) {
+      return res.status(400).json({ error: 'Auction not found or has ended' });
+    }
+    
+    const auction = auctionResults[0];
+    if (parseFloat(bid_amount) <= parseFloat(auction.current_bid || auction.start_price)) {
+      return res.status(400).json({ error: 'Bid must be higher than current bid' });
+    }
+    
+    const bidSql = `INSERT INTO bids (auction_id, user_id, bid_amount) VALUES (?, ?, ?)`;
+    const updateAuctionSql = `UPDATE auctions SET current_bid = ? WHERE auction_id = ?`;
+    
+    db.query(bidSql, [auction_id, userId, bid_amount], (err, result) => {
       if (err) {
-        console.error(' Auction Update Error:', err);
-        return res.status(500).json({ error: 'Failed to update auction' });
+        console.error(' Bid Error:', err);
+        return res.status(500).json({ error: 'Failed to place bid' });
       }
       
-      console.log("✅ Bid Placed Successfully");
-      res.json({ message: 'Bid placed successfully' });
+      db.query(updateAuctionSql, [bid_amount, auction_id], (err) => {
+        if (err) {
+          console.error(' Auction Update Error:', err);
+          return res.status(500).json({ error: 'Failed to update auction' });
+        }
+        
+        // Emit real-time bid update
+        io.emit('bidUpdate', {
+          auction_id: auction_id,
+          new_bid: bid_amount,
+          bidder_id: userId
+        });
+        
+        console.log(`💰 New bid placed: €${bid_amount} on auction ${auction_id} by user ${userId}`);
+        res.json({ message: 'Bid placed successfully' });
+      });
     });
   });
 });

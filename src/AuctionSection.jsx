@@ -46,16 +46,6 @@ const AuctionSection = () => {
     setSelectedAuction(null);
   };
 
-  // Debug: Monitor myBids state changes
-  useEffect(() => {
-    console.log('🎯 myBids state updated:', myBids);
-  }, [myBids]);
-
-  // Debug: Monitor wonAuctions state changes
-  useEffect(() => {
-    console.log('🏆 wonAuctions state updated:', wonAuctions);
-  }, [wonAuctions]);
-
   useEffect(() => {
     const fetchAuctions = async () => {
       let endpoint = '';
@@ -63,24 +53,25 @@ const AuctionSection = () => {
       else if (activeTab === 'ending soon') endpoint = '/auctions/ending-soon';
       else if (activeTab === 'my bids') {
         // Fetch user's bids
-        console.log('🔍 Fetching My Bids...');
         const token = localStorage.getItem('token');
-        console.log('🔑 Token exists:', !!token);
         if (!token) {
-          console.log('❌ No token found');
           setMyBids([]);
           return;
         }
         
         try {
-          console.log('📡 Making request to /my-bids');
           const res = await fetch('http://localhost:5000/api/auctions/my-bids', {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
           });
-          console.log('📨 Response status:', res.status);
           const data = await res.json();
-          console.log('📦 Received data:', data);
-          setMyBids(data);
+          
+          // Ensure data is an array
+          if (Array.isArray(data)) {
+            setMyBids(data);
+          } else {
+            console.error('❌ Expected array but got:', typeof data, data);
+            setMyBids([]);
+          }
         } catch (error) {
           console.error('❌ Error fetching my bids:', error);
           setMyBids([]);
@@ -89,24 +80,25 @@ const AuctionSection = () => {
       }
       else if (activeTab === 'won auctions') {
         // Fetch user's won auctions
-        console.log('🏆 Fetching Won Auctions...');
         const token = localStorage.getItem('token');
-        console.log('🔑 Token exists:', !!token);
         if (!token) {
-          console.log('❌ No token found');
           setWonAuctions([]);
           return;
         }
         
         try {
-          console.log('📡 Making request to /won-auctions');
           const res = await fetch('http://localhost:5000/api/auctions/won-auctions', {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
           });
-          console.log('📨 Response status:', res.status);
           const data = await res.json();
-          console.log('📦 Received won auctions data:', data);
-          setWonAuctions(data);
+          
+          // Ensure data is an array
+          if (Array.isArray(data)) {
+            setWonAuctions(data);
+          } else {
+            console.error('❌ Expected array but got:', typeof data, data);
+            setWonAuctions([]);
+          }
         } catch (error) {
           console.error('❌ Error fetching won auctions:', error);
           setWonAuctions([]);

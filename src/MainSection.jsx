@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './MainSection.css'; // Import the corresponding CSS file
 
 const quickPresets = [
@@ -23,30 +24,27 @@ const quickPresets = [
 const vehicleIcons = {
   SUV: '🚙',
   Sedan: '🚗',
-  Truck: '🚚',
-  Van: '🚐',
   Coupe: '🏎️',
+  Van: '🚐',
   Any: '🚘'
 };
 
 // Add gray vehicle icon URLs at the top, after imports
 const carIcon = "http://localhost:5000/uploads/car.png";
 const vanIcon = "http://localhost:5000/uploads/van.png";
-const truckIcon = "http://localhost:5000/uploads/truck.png";
-const vanIcon2 = "http://localhost:5000/uploads/van.png"; // fallback
 const coupeIcon = "http://localhost:5000/uploads/coupe.png";
 const anyIcon = "http://localhost:5000/uploads/car.png";
 
 const vehicleIconImgs = {
   SUV: carIcon,
   Sedan: carIcon,
-  Truck: truckIcon,
-  Van: vanIcon,
   Coupe: coupeIcon,
+  Van: vanIcon,
   Any: anyIcon
 };
 
 function MainSection() {
+  const navigate = useNavigate();
   // State to control the visibility of the popup
   const [showPopup, setShowPopup] = useState(false);
   const [selectedDriveType, setSelectedDriveType] = useState('');
@@ -146,8 +144,7 @@ function MainSection() {
         { label: 'Sedan', value: 'Sedan' },
         { label: 'Coupe', value: 'Coupe' },
         { label: 'Van', value: 'Van' },
-        { label: 'Truck', value: 'Truck' },
-        { label: 'I don’t care', value: '' },
+        { label: 'I don\'t care', value: '' },
       ],
     },
     {
@@ -285,10 +282,12 @@ function MainSection() {
 
   // Suggest For Me
   const fillSuggested = async () => {
+    console.log('🎯 Suggest For Me clicked');
     try {
       const response = await fetch('http://localhost:5000/api/search/suggest-car', { method: 'GET' });
       if (!response.ok) throw new Error('Failed to fetch suggestion');
       const suggestion = await response.json();
+      console.log('✅ Suggestion received:', suggestion);
       if (suggestion) {
         setSelectedDriveType(suggestion.driveType || '');
         setSelectedFuelType(suggestion.fuel || '');
@@ -300,8 +299,10 @@ function MainSection() {
         setFamilySize(suggestion.familySize || 5);
         setSelectedVehicleType(suggestion.vehicleType || '');
         setSelectedFeatures(suggestion.features || []);
+        console.log('✅ Configurator updated with suggestion');
       }
     } catch (error) {
+      console.error('❌ Suggestion failed:', error);
       // fallback: default suggestion
       setSelectedDriveType('AWD');
       setSelectedFuelType('Hybrid');
@@ -310,6 +311,7 @@ function MainSection() {
       setFamilySize(5);
       setSelectedVehicleType('SUV');
       setSelectedFeatures([]);
+      console.log('✅ Applied fallback suggestion');
     }
   };
 
@@ -353,6 +355,7 @@ function MainSection() {
   // Live search
   const fetchSearchResults = async (e) => {
     if (e) e.preventDefault();
+    console.log('🔍 Fetching search results...');
     const searchData = {
       driveType: selectedDriveType,
       fuel: selectedFuelType,
@@ -363,6 +366,7 @@ function MainSection() {
       vehicleType: selectedVehicleType,
       features: selectedFeatures,
     };
+    console.log('📊 Search data:', searchData);
     try {
       const response = await fetch('http://localhost:5000/api/search/search-cars', {
         method: 'POST',
@@ -371,6 +375,7 @@ function MainSection() {
       });
       if (!response.ok) throw new Error('Failed to fetch search results');
       const results = await response.json();
+      console.log('✅ Search results:', results.length, 'cars found');
       if (results.explanation) {
         setNoResultExplanation(results.explanation);
         setSearchResults([]);
@@ -381,14 +386,31 @@ function MainSection() {
         setSearchCount(results.length);
       }
     } catch (error) {
+      console.error('❌ Search failed:', error);
       setSearchResults([]);
       setSearchCount(0);
       setNoResultExplanation('No cars found. Please try different filters.');
     }
   };
 
+  // Navigate to Buy page with filters
+  const navigateToBuyPage = () => {
+    const searchParams = new URLSearchParams({
+      ...(selectedDriveType && { driveType: selectedDriveType }),
+      ...(selectedFuelType && { fuel: selectedFuelType }),
+      ...(selectedTransmission && { transmission: selectedTransmission }),
+      ...(selectedVehicleType && { vehicleType: selectedVehicleType }),
+      ...(priceRange[0] !== 0 && { priceFrom: priceRange[0] }),
+      ...(priceRange[1] !== 50000 && { priceTo: priceRange[1] }),
+      ...(familySize !== 5 && { familySize: familySize }),
+    });
+    
+    navigate(`/buy?${searchParams.toString()}`);
+  };
+
   // Debounced live preview fetch
   const fetchPreviewCars = () => {
+    console.log('🔍 Fetching preview cars...');
     const searchData = {
       driveType: selectedDriveType,
       fuel: selectedFuelType,
@@ -406,6 +428,7 @@ function MainSection() {
     })
       .then(res => res.json())
       .then(results => {
+        console.log('✅ Preview results:', results.length || 0, 'cars');
         if (results.explanation) {
           setNoResultExplanation(results.explanation);
           setFilteredPreviewCars([]);
@@ -414,7 +437,8 @@ function MainSection() {
           setFilteredPreviewCars(results.slice(0, 3));
         }
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error('❌ Preview fetch error:', error);
         setFilteredPreviewCars([]);
         setNoResultExplanation('No cars found. Please try different filters.');
       });
@@ -445,8 +469,12 @@ function MainSection() {
 
   // Save configuration handler
   const handleSaveConfig = async () => {
+    console.log('💾 Saving configuration...');
     const token = localStorage.getItem('token');
-    if (!token) return;
+    if (!token) {
+      console.log('❌ No token found, cannot save config');
+      return;
+    }
     const configData = {
       driveType: selectedDriveType,
       fuel: selectedFuelType,
@@ -457,14 +485,24 @@ function MainSection() {
       vehicleType: selectedVehicleType,
       features: selectedFeatures,
     };
-    await fetch('http://localhost:5000/api/search/save-config', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify(configData),
-    });
+    console.log('📊 Config data:', configData);
+    try {
+      const response = await fetch('http://localhost:5000/api/search/save-config', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(configData),
+      });
+      if (response.ok) {
+        console.log('✅ Configuration saved successfully');
+      } else {
+        console.error('❌ Failed to save configuration');
+      }
+    } catch (error) {
+      console.error('❌ Save config error:', error);
+    }
   };
 
   const handleAddToCompare = (car) => {
@@ -584,9 +622,8 @@ function MainSection() {
                     <option value="">Any</option>
                     <option value="Sedan">Sedan</option>
                     <option value="SUV">SUV</option>
-                    <option value="Truck">Truck</option>
-                    <option value="Van">Van</option>
                     <option value="Coupe">Coupe</option>
+                    <option value="Van">Van</option>
                   </select>
                 </label>
               </div>
@@ -630,6 +667,9 @@ function MainSection() {
                 </div>
                 <div className="action-btn-wrapper">
                   <button type="submit" className="action-btn primary">Search</button>
+                </div>
+                <div className="action-btn-wrapper">
+                  <button type="button" className="action-btn" onClick={navigateToBuyPage}>View All Results</button>
                 </div>
                 {isLoggedIn && (
                   <div className="action-btn-wrapper">

@@ -20,8 +20,12 @@ function App() {
   useEffect(() => {
     const storedId = localStorage.getItem('userId');
     const storedUsername = localStorage.getItem('username');
-    if (storedId && storedUsername) {
+    const storedToken = localStorage.getItem('token');
+    
+    if (storedId && storedUsername && storedToken) {
       setUser({ id: parseInt(storedId), username: storedUsername });
+    } else {
+      setUser(null);
     }
   }, []);
 
@@ -29,7 +33,8 @@ function App() {
     const handleStorage = () => {
       const updatedId = localStorage.getItem('userId');
       const updatedUsername = localStorage.getItem('username');
-      if (updatedId && updatedUsername) {
+      const updatedToken = localStorage.getItem('token');
+      if (updatedId && updatedUsername && updatedToken) {
         setUser({ id: parseInt(updatedId), username: updatedUsername });
       } else {
         setUser(null);

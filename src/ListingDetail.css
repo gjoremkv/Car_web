@@ -405,3 +405,213 @@
 .email-btn:hover {
   background: #d62839;
 }
+
+/* Auction Modal Styles */
+.auction-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.auction-modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 10px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.auction-modal-content h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.auction-modal-content .form-group {
+  margin-bottom: 1rem;
+}
+
+.auction-modal-content label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+  color: #555;
+}
+
+.auction-modal-content input,
+.auction-modal-content select {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+.auction-modal-content .error-message {
+  background: #fee;
+  color: #c33;
+  padding: 0.8rem;
+  border-radius: 5px;
+  margin-bottom: 1rem;
+  border: 1px solid #fcc;
+}
+
+.auction-modal-content .button-group {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.auction-modal-content button {
+  flex: 1;
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.auction-modal-content button[type="submit"] {
+  background: #e63946;
+  color: white;
+}
+
+.auction-modal-content button[type="submit"]:hover:not(:disabled) {
+  background: #d32f2f;
+}
+
+.auction-modal-content button[type="submit"]:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.auction-modal-content button[type="button"] {
+  background: #f5f5f5;
+  color: #333;
+}
+
+.auction-modal-content button[type="button"]:hover:not(:disabled) {
+  background: #e0e0e0;
+}
+
+/* Message conversation styles */
+.message-conversation {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: #f9f9f9;
+  border-radius: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.message-conversation h4 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.message-box .sent {
+  background: #007bff;
+  color: white;
+  padding: 0.5rem;
+  border-radius: 10px 10px 2px 10px;
+  margin: 0.5rem 0;
+  margin-left: auto;
+  max-width: 80%;
+  text-align: right;
+}
+
+.message-box .received {
+  background: #e9ecef;
+  color: #333;
+  padding: 0.5rem;
+  border-radius: 10px 10px 10px 2px;
+  margin: 0.5rem 0;
+  margin-right: auto;
+  max-width: 80%;
+}
+
+.input-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.input-row input {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.input-row button {
+  padding: 0.5rem 1rem;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+/* Contact seller styles */
+.contact-seller-box {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.contact-seller-box h4 {
+  margin: 0 0 0.75rem 0;
+  color: #333;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.message-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.message-input:focus {
+  border-color: #e63946;
+}
+
+.send-btn {
+  width: 100%;
+  background: #e63946;
+  color: white;
+  border: none;
+  padding: 0.75rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.send-btn:hover {
+  background: #d32f2f;
+}
+
+.send-btn:active {
+  background: #c62828;
+}

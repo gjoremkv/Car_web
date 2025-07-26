@@ -88,14 +88,17 @@ export default function StartAuctionPanel() {
 
     setLoading(true);
     try {
-      console.log(`🎯 Starting auction for car ${car.id} with price €${startPrice} for ${duration}h`);
-      const res = await fetch('http://localhost:5000/api/auctions/start-auction', {
+      // Start auction with inputs for this car
+      const { startPrice, duration } = carInputs[car.id];
+      console.log(`🏁 Starting auction: ${car.manufacturer} ${car.model} - €${startPrice} for ${duration}h`);
+      
+      const res = await fetch('http://localhost:5000/start-auction', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           car_id: car.id,
-          start_price: startPrice,
-          duration_hours: duration
+          start_price: Number(startPrice),
+          duration_hours: Number(duration)
         })
       });
       
@@ -140,7 +143,7 @@ export default function StartAuctionPanel() {
         return;
       }
       // 3. Create the auction
-      const auctionRes = await fetch('http://localhost:5000/api/auctions/start-auction', {
+      const auctionRes = await fetch('http://localhost:5000/start-auction', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
