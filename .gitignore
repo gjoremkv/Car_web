@@ -26,5 +26,11 @@ yarn-error.log*
 backend/node_modules
 backend/.env
 
+# User uploads (should not be tracked)
+backend/uploads/
+
 # Cursor rules (local development only)
-.cursorrules 
+.cursorrules
+
+# MCP MySQL server (development tool)
+mcp-mysql-server/ 
