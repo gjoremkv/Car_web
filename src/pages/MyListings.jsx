@@ -6,8 +6,10 @@ export default function MyListings({ currentUser }) {
 
   useEffect(() => {
     if (!currentUser?.id) return;
-    fetch(`http://localhost:5000/my-cars`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    fetch(`http://localhost:5000/api/cars/my-cars`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
     })
       .then(res => res.json())
       .then(setCars);

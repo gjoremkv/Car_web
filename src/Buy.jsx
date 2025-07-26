@@ -38,7 +38,7 @@ const Buy = () => {
 
   useEffect(() => {
     const fetchCars = () => {
-      fetch("http://localhost:5000/cars")
+      fetch("http://localhost:5000/api/cars")
         .then((response) => response.json())
         .then((data) => setCarListings(data))
         .catch((error) => console.error("Error fetching cars:", error));

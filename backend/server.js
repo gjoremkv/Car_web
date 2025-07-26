@@ -83,7 +83,7 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-//  **User Registration**
+//  **User Registration** (keeping original for backward compatibility)
 app.post('/register', (req, res) => {
   const { username, email, password } = req.body;
   console.log("🔍 Registration Request Received:", { username, email });
@@ -856,4 +856,297 @@ setInterval(() => {
 
 server.listen(port, () => {
   console.log(`🚀 Server running at http://localhost:${port}`);
+});
+
+// API Routes with /api prefix
+// Auth routes
+app.post('/api/auth/register', (req, res) => {
+  const { username, email, password } = req.body;
+  console.log("🔍 Registration Request Received:", { username, email });
+
+  if (!username || !email || !password) {
+    return res.status(400).json({ error: "All fields are required" });
+  }
+
+  bcrypt.hash(password, 10, (err, hashedPassword) => {
+    if (err) {
+      console.error(" Hashing Error:", err);
+      return res.status(500).json({ error: "Failed to hash password" });
+    }
+
+    const sql = "INSERT INTO users (username, email, password) VALUES (?, ?, ?)";
+    db.query(sql, [username, email, hashedPassword], (err, result) => {
+      if (err) {
+        console.error(" Database Error:", err);
+        if (err.code === 'ER_DUP_ENTRY') {
+          return res.status(400).json({ error: "Username or email already exists" });
+        }
+        return res.status(500).json({ error: "Failed to register user" });
+      }
+
+      console.log("✅ User Registered Successfully:", result.insertId);
+      res.status(201).json({ message: "User registered successfully" });
+    });
+  });
+});
+
+app.post('/api/auth/login', (req, res) => {
+  const { email, password } = req.body;
+  console.log("🔍 Login Request Received:", { email });
+
+  if (!email || !password) {
+    return res.status(400).json({ error: "Email and password are required" });
+  }
+
+  const sql = "SELECT * FROM users WHERE email = ?";
+  db.query(sql, [email], (err, results) => {
+    if (err) {
+      console.error(" Database Error:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
+
+    if (results.length === 0) {
+      return res.status(400).json({ error: "Invalid credentials" });
+    }
+
+    const user = results[0];
+    bcrypt.compare(password, user.password, (err, isMatch) => {
+      if (err) {
+        console.error(" Password Comparison Error:", err);
+        return res.status(500).json({ error: "Password comparison failed" });
+      }
+
+      if (!isMatch) {
+        return res.status(400).json({ error: "Invalid credentials" });
+      }
+
+      const token = jwt.sign({ id: user.id, email: user.email }, 'your_jwt_secret', { expiresIn: '1h' });
+      console.log("✅ Login Successful for:", user.email);
+      res.json({ token, username: user.username });
+    });
+  });
+});
+
+// Car routes
+app.get('/api/cars', (req, res) => {
+  const sql = `
+    SELECT c.*, u.username 
+    FROM cars c 
+    LEFT JOIN users u ON c.user_id = u.id 
+    ORDER BY c.created_at DESC
+  `;
+  
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error(' Database Error:', err);
+      return res.status(500).json({ error: 'Failed to fetch cars' });
+    }
+    
+    console.log(`✅ Fetched ${results.length} cars from database`);
+    res.json(results);
+  });
+});
+
+app.get('/api/cars/my-cars', authenticateToken, (req, res) => {
+  const userId = req.user.id;
+  const sql = "SELECT * FROM cars WHERE user_id = ? ORDER BY created_at DESC";
+  
+  db.query(sql, [userId], (err, results) => {
+    if (err) {
+      console.error(' Database Error:', err);
+      return res.status(500).json({ error: 'Failed to fetch user cars' });
+    }
+    
+    console.log(`✅ Fetched ${results.length} cars for user ${userId}`);
+    res.json(results);
+  });
+});
+
+app.post('/api/cars', authenticateToken, upload.array('images', 10), (req, res) => {
+  const userId = req.user.id;
+  const { manufacturer, model, year, price, fuel, transmission, drive_type, color, kilometers, seats, features, vehicle_type } = req.body;
+  const imagePath = req.files && req.files.length > 0 ? `/uploads/${req.files[0].filename}` : null;
+
+  const sql = `INSERT INTO cars (user_id, manufacturer, model, year, price, fuel, transmission, drive_type, color, kilometers, seats, features, vehicle_type, image_path) 
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+  
+  db.query(sql, [userId, manufacturer, model, year, price, fuel, transmission, drive_type, color, kilometers, seats, features, vehicle_type, imagePath], (err, result) => {
+    if (err) {
+      console.error(' Database Error:', err);
+      return res.status(500).json({ error: 'Failed to add car' });
+    }
+    
+    console.log("✅ Car Added Successfully:", result.insertId);
+    res.status(201).json({ message: 'Car added successfully', carId: result.insertId });
+  });
+});
+
+// Search routes
+app.post('/api/search/search-cars', (req, res) => {
+  const { manufacturer, model, fuel, transmission, driveType, vehicleType, budgetMin, budgetMax, familySize, features, priceFrom, priceTo, yearFrom, yearTo, kilometers } = req.body;
+  
+  let sql = `SELECT c.*, u.username FROM cars c LEFT JOIN users u ON c.user_id = u.id WHERE 1=1`;
+  let params = [];
+
+  if (manufacturer) {
+    sql += ` AND c.manufacturer LIKE ?`;
+    params.push(`%${manufacturer}%`);
+  }
+  if (model) {
+    sql += ` AND c.model LIKE ?`;
+    params.push(`%${model}%`);
+  }
+  if (fuel) {
+    sql += ` AND c.fuel = ?`;
+    params.push(fuel);
+  }
+  if (transmission) {
+    sql += ` AND c.transmission = ?`;
+    params.push(transmission);
+  }
+  if (driveType) {
+    sql += ` AND c.drive_type = ?`;
+    params.push(driveType);
+  }
+  if (vehicleType) {
+    sql += ` AND c.vehicle_type = ?`;
+    params.push(vehicleType);
+  }
+  if (budgetMin || priceFrom) {
+    sql += ` AND c.price >= ?`;
+    params.push(budgetMin || priceFrom);
+  }
+  if (budgetMax || priceTo) {
+    sql += ` AND c.price <= ?`;
+    params.push(budgetMax || priceTo);
+  }
+  if (yearFrom) {
+    sql += ` AND c.year >= ?`;
+    params.push(yearFrom);
+  }
+  if (yearTo) {
+    sql += ` AND c.year <= ?`;
+    params.push(yearTo);
+  }
+  if (kilometers) {
+    sql += ` AND c.kilometers <= ?`;
+    params.push(kilometers);
+  }
+  if (familySize) {
+    sql += ` AND c.seats >= ?`;
+    params.push(familySize);
+  }
+
+  sql += ` ORDER BY c.created_at DESC`;
+
+  db.query(sql, params, (err, results) => {
+    if (err) {
+      console.error(' Search Error:', err);
+      return res.status(500).json({ error: 'Search failed' });
+    }
+    
+    console.log(`✅ Search completed: ${results.length} cars found`);
+    res.json(results);
+  });
+});
+
+app.get('/api/search/suggest-car', (req, res) => {
+  const suggestions = [
+    { vehicleType: 'SUV', fuel: 'Hybrid', transmission: 'Automatic', budgetMin: 15000, budgetMax: 25000, familySize: 5 },
+    { vehicleType: 'Sedan', fuel: 'Gasoline', transmission: 'Manual', budgetMin: 8000, budgetMax: 15000, familySize: 4 },
+    { vehicleType: 'Van', fuel: 'Diesel', transmission: 'Automatic', budgetMin: 20000, budgetMax: 35000, familySize: 7 }
+  ];
+  
+  const randomSuggestion = suggestions[Math.floor(Math.random() * suggestions.length)];
+  res.json(randomSuggestion);
+});
+
+app.post('/api/search/save-config', authenticateToken, (req, res) => {
+  res.json({ message: 'Configuration saved successfully' });
+});
+
+// Auction routes
+app.post('/api/auctions/start-auction', authenticateToken, (req, res) => {
+  const userId = req.user.id;
+  const { car_id, start_price, duration_hours, end_time } = req.body;
+  
+  const endTime = end_time || new Date(Date.now() + (duration_hours || 24) * 60 * 60 * 1000);
+  
+  const sql = `INSERT INTO auctions (car_id, user_id, start_price, current_price, end_time, status) VALUES (?, ?, ?, ?, ?, 'active')`;
+  
+  db.query(sql, [car_id, userId, start_price, start_price, endTime], (err, result) => {
+    if (err) {
+      console.error(' Auction Creation Error:', err);
+      return res.status(500).json({ error: 'Failed to start auction' });
+    }
+    
+    console.log("✅ Auction Started Successfully:", result.insertId);
+    res.status(201).json({ message: 'Auction started successfully', auctionId: result.insertId });
+  });
+});
+
+app.get('/api/auctions/my-bids', authenticateToken, (req, res) => {
+  const userId = req.user.id;
+  const sql = `
+    SELECT a.*, c.manufacturer, c.model, c.year, c.image_path, b.bid_amount, b.created_at as bid_time
+    FROM bids b
+    JOIN auctions a ON b.auction_id = a.id
+    JOIN cars c ON a.car_id = c.id
+    WHERE b.user_id = ?
+    ORDER BY b.created_at DESC
+  `;
+  
+  db.query(sql, [userId], (err, results) => {
+    if (err) {
+      console.error(' Database Error:', err);
+      return res.status(500).json({ error: 'Failed to fetch bids' });
+    }
+    
+    res.json(results);
+  });
+});
+
+app.get('/api/auctions/won-auctions', authenticateToken, (req, res) => {
+  const userId = req.user.id;
+  const sql = `
+    SELECT a.*, c.manufacturer, c.model, c.year, c.image_path
+    FROM auctions a
+    JOIN cars c ON a.car_id = c.id
+    WHERE a.winner_id = ? AND a.status = 'completed'
+    ORDER BY a.end_time DESC
+  `;
+  
+  db.query(sql, [userId], (err, results) => {
+    if (err) {
+      console.error(' Database Error:', err);
+      return res.status(500).json({ error: 'Failed to fetch won auctions' });
+    }
+    
+    res.json(results);
+  });
+});
+
+app.post('/api/auctions/place-bid', authenticateToken, (req, res) => {
+  const userId = req.user.id;
+  const { auction_id, bid_amount } = req.body;
+  
+  const bidSql = `INSERT INTO bids (auction_id, user_id, bid_amount) VALUES (?, ?, ?)`;
+  const updateAuctionSql = `UPDATE auctions SET current_price = ? WHERE id = ?`;
+  
+  db.query(bidSql, [auction_id, userId, bid_amount], (err, result) => {
+    if (err) {
+      console.error(' Bid Error:', err);
+      return res.status(500).json({ error: 'Failed to place bid' });
+    }
+    
+    db.query(updateAuctionSql, [bid_amount, auction_id], (err) => {
+      if (err) {
+        console.error(' Auction Update Error:', err);
+        return res.status(500).json({ error: 'Failed to update auction' });
+      }
+      
+      console.log("✅ Bid Placed Successfully");
+      res.json({ message: 'Bid placed successfully' });
+    });
+  });
 });

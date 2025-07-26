@@ -8,16 +8,17 @@ export default function StartAuctionPanel() {
   const [loading, setLoading] = useState(false);
 
   const token = localStorage.getItem('token');
+  const userId = localStorage.getItem('userId'); // Assuming userId is also stored in localStorage
 
   useEffect(() => {
-    if (step === 1 && token) {
+    if (step === 1 && userId) {
       console.log('🔍 Fetching user cars for auction...');
       setLoading(true);
       // Clear previous data first
       setMyCars([]);
       setCarInputs({});
       
-      fetch(`http://localhost:5000/my-cars`, {
+      fetch(`http://localhost:5000/api/cars/my-cars`, {
         headers: { Authorization: `Bearer ${token}` }
       })
         .then(res => res.json())
@@ -56,7 +57,7 @@ export default function StartAuctionPanel() {
       setMyCars([]);
       setCarInputs({});
     }
-  }, [step, token]);
+  }, [step, userId, token]);
 
   // Update input for specific car
   const updateCarInput = (carId, field, value) => {
@@ -88,7 +89,7 @@ export default function StartAuctionPanel() {
     setLoading(true);
     try {
       console.log(`🎯 Starting auction for car ${car.id} with price €${startPrice} for ${duration}h`);
-      const res = await fetch('http://localhost:5000/start-auction', {
+      const res = await fetch('http://localhost:5000/api/auctions/start-auction', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
@@ -139,12 +140,9 @@ export default function StartAuctionPanel() {
         return;
       }
       // 3. Create the auction
-      const auctionRes = await fetch('http://localhost:5000/start-auction', {
+      const auctionRes = await fetch('http://localhost:5000/api/auctions/start-auction', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           car_id: data.car.id,
           start_price: Number(startPrice),

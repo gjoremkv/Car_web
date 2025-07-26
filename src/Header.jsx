@@ -28,40 +28,32 @@ function Header() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:5000/login', {
+      const response = await axios.post('http://localhost:5000/api/auth/login', {
         email,
         password,
       });
 
-      const { token, username } = response.data;
-      
-      // Decode the token to get user ID
-      const tokenPayload = JSON.parse(atob(token.split('.')[1]));
-      const userId = tokenPayload.id;
-      
+      const { token } = response.data;
       localStorage.setItem('token', token);
-      localStorage.setItem('username', username);
-      localStorage.setItem('userId', userId);
-      setUsername(username);
-      setIsOpen(false);
-      
-      // Dispatch storage event to notify App component
-      window.dispatchEvent(new Event('storage'));
+      setIsLoggedIn(true);
+      setShowForm(false);
+      setEmail('');
+      setPassword('');
     } catch (error) {
-      console.error(error);
-      alert('Login failed');
+      setError('Login failed');
+      console.error('Error logging in:', error);
     }
   };
 
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:5000/register', {
-        username,
+      const response = await axios.post('http://localhost:5000/api/auth/register', {
+        first_name: firstName,
+        last_name: lastName,
         email,
         password,
       });
-      alert(response.data.message);
     } catch (error) {
       console.log('Error response:', error.response);
       if (error.response && error.response.data && error.response.data.message) {

@@ -16,36 +16,71 @@ export default function StartAuctionModal({ onClose }) {
   const token = localStorage.getItem('token');
 
   useEffect(() => {
-    if (step === 1 && userId) {
-      fetch(`http://localhost:5000/my-cars`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-        .then(res => res.json())
-        .then(data => {
-          setMyCars(data);
-        })
-        .catch(err => {
-          console.error('[DEBUG] Error fetching /my-cars:', err);
-        });
-    }
-  }, [step, userId, token]);
+    fetch(`http://localhost:5000/api/cars/my-cars`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    })
+    .then(res => res.json())
+    .then(data => setMyCars(data))
+    .catch(err => console.error('Error fetching my cars:', err));
+  }, []);
 
-  // Auction existing car
-  const handleAuctionExisting = async (car) => {
-    const res = await fetch('http://localhost:5000/start-auction', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({
-        car_id: car.id,
-        start_price: Number(startPrice),
-        duration_hours: Number(duration)
-      })
-    });
-    if (res.ok) {
-      alert('Auction started!');
-      onClose();
-    } else {
-      alert('Failed to start auction');
+  const handleStartAuction = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch('http://localhost:5000/api/auctions/start-auction', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({
+          car_id: selectedCar,
+          start_price: startPrice,
+          end_time: endTime,
+        }),
+      });
+
+      if (res.ok) {
+        alert('Auction started successfully!');
+        onClose();
+      } else {
+        alert('Failed to start auction');
+      }
+    } catch (error) {
+      console.error('Error starting auction:', error);
+      alert('Error starting auction');
+    }
+  };
+
+  const handleAuctionExistingCar = async () => {
+    if (!selectedCar || !startPrice || !endTime) {
+      alert('Please fill all fields');
+      return;
+    }
+
+    try {
+      const auctionRes = await fetch('http://localhost:5000/api/auctions/start-auction', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({
+          car_id: selectedCar,
+          start_price: startPrice,
+          end_time: endTime,
+        }),
+      });
+
+      if (auctionRes.ok) {
+        alert('Auction started successfully!');
+        onClose();
+      } else {
+        alert('Failed to start auction');
+      }
+    } catch (error) {
+      console.error('Error starting auction:', error);
+      alert('Error starting auction');
     }
   };
 
@@ -63,7 +98,7 @@ export default function StartAuctionModal({ onClose }) {
       return;
     }
     // 2. Start auction
-    const auctionRes = await fetch('http://localhost:5000/start-auction', {
+    const auctionRes = await fetch('http://localhost:5000/api/auctions/start-auction', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({

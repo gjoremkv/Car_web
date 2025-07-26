@@ -74,13 +74,13 @@ const AuctionSection = () => {
         
         try {
           console.log('📡 Making request to /my-bids');
-          const res = await fetch('http://localhost:5000/my-bids', {
-            headers: { 'Authorization': `Bearer ${token}` }
+          const res = await fetch('http://localhost:5000/api/auctions/my-bids', {
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
           });
           console.log('📨 Response status:', res.status);
           const data = await res.json();
           console.log('📦 Received data:', data);
-          setMyBids(Array.isArray(data) ? data : []);
+          setMyBids(data);
         } catch (error) {
           console.error('❌ Error fetching my bids:', error);
           setMyBids([]);
@@ -100,13 +100,13 @@ const AuctionSection = () => {
         
         try {
           console.log('📡 Making request to /won-auctions');
-          const res = await fetch('http://localhost:5000/won-auctions', {
-            headers: { 'Authorization': `Bearer ${token}` }
+          const res = await fetch('http://localhost:5000/api/auctions/won-auctions', {
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
           });
           console.log('📨 Response status:', res.status);
           const data = await res.json();
           console.log('📦 Received won auctions data:', data);
-          setWonAuctions(Array.isArray(data) ? data : []);
+          setWonAuctions(data);
         } catch (error) {
           console.error('❌ Error fetching won auctions:', error);
           setWonAuctions([]);

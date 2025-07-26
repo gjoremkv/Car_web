@@ -18,16 +18,11 @@ export default function ListingDetail({ currentUser }) {
     const carObj = location.state?.car;
     if (!carObj || !carObj.id) return;
     setCar(carObj);
-    fetch(`http://localhost:5000/car/${carObj.id}/images`)
-      .then((res) => res.json())
-      .then((data) => {
-        const allImages = [
-          carObj.image_path ? `http://localhost:5000${carObj.image_path}` : null,
-          ...data.map(img => `http://localhost:5000${img.image_path}`)
-        ].filter(Boolean);
-        const uniqueImages = allImages.filter((url, idx, arr) => arr.indexOf(url) === idx);
-        setImages(uniqueImages);
-      });
+    
+    // Use only the main image from the car object
+    if (carObj.image_path) {
+      setImages([`http://localhost:5000${carObj.image_path}`]);
+    }
   }, [location.state]);
 
   if (!car || !car.id) return <p>Car not found</p>;

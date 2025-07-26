@@ -9,37 +9,27 @@ export default function BiddingModal({ auction, onClose, onBidPlaced }) {
   const currentBid = parseFloat(auction.current_bid || 0);
   const minBid = currentBid + 1; // Minimum bid increment
 
-  const handleSubmit = async (e) => {
+  const handleBid = async (e) => {
     e.preventDefault();
-    setError('');
-    setIsLoading(true);
-
-    const bid = parseFloat(bidAmount);
-    if (bid <= currentBid) {
-      setError(`Bid must be higher than current bid of €${currentBid.toLocaleString()}`);
-      setIsLoading(false);
-      return;
-    }
-
+    
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/place-bid', {
+      const response = await fetch('http://localhost:5000/api/auctions/place-bid', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
         body: JSON.stringify({
-          auction_id: auction.auction_id,
-          bid_amount: bid
-        })
+          auction_id: auction.id,
+          bid_amount: bidAmount,
+        }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
         alert('Bid placed successfully!');
-        onBidPlaced(auction.auction_id, bid);
+        onBidPlaced(auction.auction_id, bidAmount);
         onClose();
       } else {
         setError(data.message || 'Failed to place bid');
@@ -70,7 +60,7 @@ export default function BiddingModal({ auction, onClose, onBidPlaced }) {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleBid}>
           <div className="form-group">
             <label htmlFor="bidAmount">Your Bid (€)</label>
             <input

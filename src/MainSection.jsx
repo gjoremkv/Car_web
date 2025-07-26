@@ -286,7 +286,7 @@ function MainSection() {
   // Suggest For Me
   const fillSuggested = async () => {
     try {
-      const response = await fetch('http://localhost:5000/suggest-car', { method: 'GET' });
+      const response = await fetch('http://localhost:5000/api/search/suggest-car', { method: 'GET' });
       if (!response.ok) throw new Error('Failed to fetch suggestion');
       const suggestion = await response.json();
       if (suggestion) {
@@ -364,7 +364,7 @@ function MainSection() {
       features: selectedFeatures,
     };
     try {
-      const response = await fetch('http://localhost:5000/search-cars', {
+      const response = await fetch('http://localhost:5000/api/search/search-cars', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(searchData),
@@ -399,7 +399,7 @@ function MainSection() {
       vehicleType: selectedVehicleType,
       features: selectedFeatures,
     };
-    fetch('http://localhost:5000/search-cars', {
+    fetch('http://localhost:5000/api/search/search-cars', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(searchData),
@@ -457,7 +457,7 @@ function MainSection() {
       vehicleType: selectedVehicleType,
       features: selectedFeatures,
     };
-    await fetch('http://localhost:5000/save-config', {
+    await fetch('http://localhost:5000/api/search/save-config', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
