@@ -1,15 +1,30 @@
-# Node modules
-node_modules/
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# Build and cache
-.cache/
-build/
-dist/
-*.log
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
 
-# Uploaded files
-backend/uploads/
+# testing
+/coverage
 
-# OS files
+# production
+/build
+
+# misc
 .DS_Store
-Thumbs.db 
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Backend dependencies
+backend/node_modules
+backend/.env
+
+# Cursor rules (local development only)
+.cursorrules 
