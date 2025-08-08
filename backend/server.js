@@ -9,7 +9,8 @@ const path = require('path');
 require('dotenv').config(); // Load environment variables
 
 const app = express();
-const port = 5000;
+const port = process.env.PORT;
+const backendUrl = `http://${process.env.IP_ADDR}:${port}`;
 
 // --- Add these lines after app and port ---
 const http = require('http');
@@ -18,7 +19,7 @@ const server = http.createServer(app);
 const { Server } = require('socket.io');
 const io = new Server(server, {
   cors: {
-    origin: 'http://localhost:3000',
+    origin: backendUrl,
     methods: ['GET', 'POST']
   }
 });
@@ -28,7 +29,7 @@ app.use('/uploads', express.static('uploads'));
 
 //  **Enable CORS**
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: backendUrl,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
@@ -37,9 +38,9 @@ app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// **MySQL Database Connection**
+// **MySQL Database Connection
 const db = mysql.createConnection({
-  host: 'localhost',
+  host: process.env.IP_ADDR,
   user: process.env.DB_USER, // Only from .env
   password: process.env.DB_PASSWORD, // Only from .env
   database: process.env.DB_NAME, // Only from .env
@@ -865,7 +866,7 @@ setInterval(() => {
 }, 60000); // Every 60 seconds
 
 server.listen(port, () => {
-  console.log(`🚀 Server running at http://localhost:${port}`);
+  console.log(`🚀 Server running at ${backendUrl}`);
 });
 
 // API Routes with /api prefix
