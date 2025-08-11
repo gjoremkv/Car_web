@@ -1,49 +1,71 @@
+require('dotenv').config(); // Load environment variables
 const express = require('express');
 const mysql = require('mysql2');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const bodyParser = require('body-parser');
 const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
-require('dotenv').config(); // Load environment variables
+const fs = require('fs');                    // ADD THIS
 
 const app = express();
+// === Static uploads setup (absolute path) ===
+const UPLOADS_DIR = path.join(__dirname, 'uploads');        // ADD
+if (!fs.existsSync(UPLOADS_DIR)) {                          // ADD
+  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+}
+
+// Serve /uploads from disk (must be before routes)
+app.use('/uploads', express.static(UPLOADS_DIR));           // REPLACES static line
+
 const port = process.env.PORT;
 const backendUrl = `http://${process.env.IP_ADDR}:${port}`;
 
-// --- Add these lines after app and port ---
+// Whitelist your frontend origins
+const allowedOrigins = [
+  process.env.FRONTEND_URL, // e.g. http://localhost:3000
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  `http://${process.env.IP_ADDR}:6605`
+].filter(Boolean);
+
+// HTTP server + Socket.IO
 const http = require('http');
 const server = http.createServer(app);
 
 const { Server } = require('socket.io');
 const io = new Server(server, {
   cors: {
-    origin: backendUrl,
+    origin: allowedOrigins,
     methods: ['GET', 'POST']
   }
 });
 
-//  **Serve Uploaded Images**
-app.use('/uploads', express.static('uploads'));
-
-//  **Enable CORS**
-app.use(cors({
-  origin: backendUrl,
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+// Express CORS
+const corsOptions = {
+  origin(origin, cb) {
+    if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+    return cb(new Error(`CORS not allowed from origin: ${origin}`));
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+  // credentials: true, // uncomment if you ever send cookies
+};
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
-app.use(bodyParser.json());
+console.log('Start server');
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, "build")));
 
 // **MySQL Database Connection
 const db = mysql.createConnection({
-  host: process.env.IP_ADDR,
   user: process.env.DB_USER, // Only from .env
   password: process.env.DB_PASSWORD, // Only from .env
-  database: process.env.DB_NAME, // Only from .env
+  database: process.env.DB_DATABASE, // Only from .env
+  host: process.env.DB_HOST
 });
 
 db.connect((err) => {
@@ -151,14 +173,13 @@ app.post('/login', (req, res) => {
   });
 });
 
-//  **Multer Configuration for Image Uploads**
+//  **Multer Configuration for Image Uploads**  (ABSOLUTE PATH)
 const storage = multer.diskStorage({
-  destination: './uploads/',
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
-  },
+  destination: (req, file, cb) => cb(null, UPLOADS_DIR),
+  filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname)),
 });
 const upload = multer({ storage });
+
 
 //  **Add a New Car Listing**
 app.post('/add-car', authenticateToken, upload.array('images', 10), (req, res) => {
@@ -1221,4 +1242,12 @@ app.post('/api/auctions/place-bid', authenticateToken, (req, res) => {
       });
     });
   });
+});
+
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "build", "index.html"))
+});
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "build", "index.html"))
 });
