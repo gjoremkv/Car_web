@@ -13,15 +13,15 @@ export default function BiddingModal({ auction, onClose, onBidPlaced }) {
     e.preventDefault();
     
     try {
-      const response = await fetch('http://localhost:5000/api/auctions/place-bid', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auctions/place-bid`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
         body: JSON.stringify({
-          auction_id: auction.id,
-          bid_amount: bidAmount,
+          auction_id: auction.auction_id || auction.id,
+          bid_amount: Number(bidAmount),
         }),
       });
 

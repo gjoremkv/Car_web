@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import './Header.css';
 
-const carLogo = "http://localhost:5000/uploads/auto_car-16.png";
+const carLogo = '/uploads/auto_car-16.png'; // as you had it
 
 function Header() {
   const location = useLocation();
@@ -31,12 +31,10 @@ function Header() {
       setIsLoggedIn(false);
     }
 
-    // Listen for storage changes (login/logout in other tabs)
     const handleStorageChange = () => {
       const newUsername = localStorage.getItem('username');
       const newToken = localStorage.getItem('token');
       const newUserId = localStorage.getItem('userId');
-      
       if (newUsername && newToken && newUserId) {
         setUsername(newUsername);
         setIsLoggedIn(true);
@@ -47,38 +45,31 @@ function Header() {
     };
 
     window.addEventListener('storage', handleStorageChange);
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  const togglePopup = () => {
-    setIsOpen(!isOpen);
-  };
+  const togglePopup = () => setIsOpen(!isOpen);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', {
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/login`, {
         email,
         password,
       });
 
       const { token, username: responseUsername, userId } = response.data;
-      console.log('Login successful:', { token, username: responseUsername, userId });
-      
+
       localStorage.setItem('token', token);
       localStorage.setItem('username', responseUsername);
-      localStorage.setItem('userId', userId); // Store userId for MiniInbox
+      localStorage.setItem('userId', userId);
+
       setUsername(responseUsername);
       setIsLoggedIn(true);
-      setIsOpen(false); // Close the popup
+      setIsOpen(false);
       setEmail('');
       setPassword('');
-      setErrorMessage(''); // Clear any error messages
-      
-      console.log('Login state updated:', { username: responseUsername, userId, isLoggedIn: true });
+      setErrorMessage('');
     } catch (error) {
       setErrorMessage('Login failed');
       console.error('Error logging in:', error);
@@ -87,24 +78,22 @@ function Header() {
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    setErrorMessage(''); // Clear previous errors
+    setErrorMessage('');
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/register', {
+      await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/register`, {
         first_name: firstName,
         last_name: lastName,
         email,
         password,
       });
-      
-      // Registration successful
+
       setErrorMessage('Registration successful! Please login.');
-      setIsLogin(true); // Switch to login form
+      setIsLogin(true);
       setFirstName('');
       setLastName('');
       setEmail('');
       setPassword('');
     } catch (error) {
-      console.log('Error response:', error.response);
       if (error.response && error.response.data) {
         const errorMsg = error.response.data.error || error.response.data.message || 'An unknown error occurred';
         setErrorMessage(errorMsg);
@@ -120,18 +109,16 @@ function Header() {
     localStorage.removeItem('userId');
     setUsername('');
     setIsLoggedIn(false);
-    
-    // Dispatch storage event to notify App component
     window.dispatchEvent(new Event('storage'));
   };
 
   return (
     <header className="header">
-      {console.log('Header render:', { username, isLoggedIn, token: localStorage.getItem('token') })}
       <div className="logo-container">
         <img src={carLogo} alt="vozilo.si" className="logo-image" draggable="false" />
         <span className="logo-text">vozilo.si</span>
       </div>
+
       <nav className="nav-links">
         {location.pathname === '/buy' ? (
           <Link to="/" className="nav-link" title="Home">

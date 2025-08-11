@@ -5,7 +5,7 @@ export default function Inbox({ userId }) {
 
   useEffect(() => {
     if (!userId) return; // Only fetch if userId is defined
-    fetch(`http://localhost:5000/api/messages/${userId}`)
+    fetch(`${process.env.REACT_APP_API_URL}/api/messages/${userId}`)
       .then((res) => res.json())
       .then((data) => {
         console.log('Messages:', data); // for debug

@@ -60,7 +60,7 @@ const AuctionSection = () => {
         }
         
         try {
-          const res = await fetch('http://localhost:5000/api/auctions/my-bids', {
+          const res = await fetch(`${process.env.REACT_APP_API_URL}/api/auctions/my-bids`, {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
           });
           const data = await res.json();
@@ -87,7 +87,7 @@ const AuctionSection = () => {
         }
         
         try {
-          const res = await fetch('http://localhost:5000/api/auctions/won-auctions', {
+          const res = await fetch(`${process.env.REACT_APP_API_URL}/api/auctions/won-auctions`, {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
           });
           const data = await res.json();
@@ -108,7 +108,7 @@ const AuctionSection = () => {
       else return;
 
       try {
-        const res = await fetch(`http://localhost:5000${endpoint}`);
+        const res = await fetch(`${process.env.REACT_APP_API_URL}${endpoint}`);
         
         if (!res.ok) {
           console.error(`Failed to fetch auctions: ${res.status} ${res.statusText}`);
@@ -160,36 +160,11 @@ const AuctionSection = () => {
       <header className="auction-header">
         <h1>Auction Page</h1>
         <div>
-          <button className="btn">Start Selling</button>
-          <button className="btn primary">Browse Live Auctions</button>
+       
         </div>
       </header>
 
       <div className="auction-body">
-        <aside className="auction-sidebar">
-          <h3>Filters</h3>
-
-          <label>Year</label>
-          <div className="filter-row">
-            <input type="number" placeholder="2000" />
-            <span>-</span>
-            <input type="number" placeholder="2024" />
-          </div>
-
-          <label>Fuel Type</label>
-          <select>
-            <option>Gasoline</option>
-            <option>Diesel</option>
-          </select>
-
-          <label>Transmission</label>
-          <select>
-            <option>Automatic</option>
-            <option>Manual</option>
-          </select>
-
-          <button className="filter-btn">Apply Filters</button>
-        </aside>
 
         <main className="auction-main">
           <nav className="auction-tabs">
@@ -232,7 +207,7 @@ const AuctionSection = () => {
                       return (
                         <div className="auction-card" key={bid.bid_id}>
                           <img 
-                            src={bid.image_path ? `http://localhost:5000${bid.image_path}` : '/placeholder.jpg'} 
+                            src={bid.image_path ? apiUrl(bid.image_path) : '/placeholder.jpg'} 
                             alt={`${bid.manufacturer} ${bid.model}`} 
                             className="auction-image" 
                           />
@@ -265,7 +240,7 @@ const AuctionSection = () => {
                       return (
                         <div className="auction-card" key={auction.auction_id}>
                           <img 
-                            src={auction.image_path ? `http://localhost:5000${auction.image_path}` : '/placeholder.jpg'} 
+                            src={auction.image_path ? apiUrl(auction.image_path) : '/placeholder.jpg'} 
                             alt={`${auction.manufacturer} ${auction.model}`} 
                             className="auction-image" 
                           />
@@ -304,7 +279,7 @@ const AuctionSection = () => {
                       return (
                         <div className="auction-card" key={auction.auction_id}>
                           <img 
-                            src={auction.image_path ? `http://localhost:5000${auction.image_path}` : '/placeholder.jpg'} 
+                            src={auction.image_path ? apiUrl(auction.image_path) : '/placeholder.jpg'} 
                             alt={`${auction.manufacturer} ${auction.model}`} 
                             className="auction-image" 
                           />
@@ -345,3 +320,4 @@ const AuctionSection = () => {
 };
 
 export default AuctionSection; 
+import { apiUrl } from './utils/url';

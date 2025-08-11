@@ -3,9 +3,10 @@ import { useNavigate, Link } from 'react-router-dom';
 import { popularManufacturers, otherManufacturers } from './data/manufacturers';
 import { modelsByBrand } from './data/modelsByBrand';
 import './AfterMain.css'; // Create a corresponding CSS file
+import { apiUrl } from './utils/url';
 
-const carIcon = "http://localhost:5000/uploads/car.png";
-const vanIcon = "http://localhost:5000/uploads/van.png";
+const carIcon = '/uploads/car.png';
+const vanIcon = '/uploads/van.png';
 
 // Generate years array (last 40 years)
 const years = Array.from({ length: 40 }, (_, i) => new Date().getFullYear() - i);
@@ -30,7 +31,7 @@ function AfterMain() {
     const fetchGoodDeals = async () => {
       try {
         console.log('🎯 Fetching good deals...');
-        const response = await fetch("http://localhost:5000/api/cars");
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/cars`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -131,7 +132,7 @@ function AfterMain() {
   const refreshGoodDeals = async () => {
     try {
       console.log('🔄 Refreshing good deals...');
-      const response = await fetch("http://localhost:5000/api/cars");
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/cars`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -288,7 +289,7 @@ function AfterMain() {
                   >
                     <div className="deal-image">
                       <img 
-                        src={deal.image_path ? `http://localhost:5000${deal.image_path}` : 'https://via.placeholder.com/300x200'} 
+                        src={deal.image_path ? apiUrl(deal.image_path) : 'https://via.placeholder.com/300x200'} 
                         alt={`${deal.manufacturer} ${deal.model}`} 
                       />
                     </div>

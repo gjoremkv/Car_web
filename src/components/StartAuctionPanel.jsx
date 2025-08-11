@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import CarForm from './CarForm';
+import { apiUrl } from '../utils/url';
 
 export default function StartAuctionPanel() {
   const [step, setStep] = useState(0); // 0: choose, 1: existing, 2: new
@@ -18,7 +19,7 @@ export default function StartAuctionPanel() {
       setMyCars([]);
       setCarInputs({});
       
-      fetch(`http://localhost:5000/api/cars/my-cars`, {
+      fetch(`${process.env.REACT_APP_API_URL}/api/cars/my-cars`, {
         headers: { Authorization: `Bearer ${token}` }
       })
         .then(res => res.json())
@@ -92,7 +93,7 @@ export default function StartAuctionPanel() {
       const { startPrice, duration } = carInputs[car.id];
       console.log(`🏁 Starting auction: ${car.manufacturer} ${car.model} - €${startPrice} for ${duration}h`);
       
-      const res = await fetch('http://localhost:5000/start-auction', {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/start-auction`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
@@ -125,7 +126,7 @@ export default function StartAuctionPanel() {
     console.log('[DEBUG] Submitting car for auction...');
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/add-car', {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/add-car`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
@@ -143,7 +144,7 @@ export default function StartAuctionPanel() {
         return;
       }
       // 3. Create the auction
-      const auctionRes = await fetch('http://localhost:5000/start-auction', {
+      const auctionRes = await fetch(`${process.env.REACT_APP_API_URL}/start-auction`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
@@ -224,7 +225,7 @@ export default function StartAuctionPanel() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '12px' }}>
                   {car.image_path && (
                     <img 
-                      src={`http://localhost:5000${car.image_path}`} 
+                      src={apiUrl(car.image_path)} 
                       alt={`${car.manufacturer} ${car.model}`}
                       style={{ width: '80px', height: '60px', objectFit: 'cover', borderRadius: '4px' }}
                     />

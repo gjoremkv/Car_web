@@ -5,6 +5,7 @@ import ContactSellerCard from './components/ContactSellerCard';
 import MessageBox from './components/MessageBox';
 import './ListingDetail.css';
 import socket from './socket'; // adjust path if needed
+import { apiUrl } from './utils/url';
 import AuctionModal from './components/AuctionModal';
 
 export default function ListingDetail({ currentUser }) {
@@ -26,15 +27,15 @@ export default function ListingDetail({ currentUser }) {
         
         // Add main image if it exists
         if (carObj.image_path) {
-          allImages.push(`http://localhost:5000${carObj.image_path}`);
+          allImages.push(apiUrl(carObj.image_path));
         }
         
         // Fetch additional images from car_images table
-        const response = await fetch(`http://localhost:5000/car/${carObj.id}/images`);
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/car/${carObj.id}/images`);
         if (response.ok) {
           const additionalImages = await response.json();
           additionalImages.forEach(img => {
-            const imageUrl = `http://localhost:5000${img.image_path}`;
+            const imageUrl = apiUrl(img.image_path);
             // Avoid duplicates
             if (!allImages.includes(imageUrl)) {
               allImages.push(imageUrl);
@@ -47,7 +48,7 @@ export default function ListingDetail({ currentUser }) {
         console.error('Error fetching images:', error);
         // Fallback to main image only
         if (carObj.image_path) {
-          setImages([`http://localhost:5000${carObj.image_path}`]);
+          setImages([apiUrl(carObj.image_path)]);
         }
       }
     };

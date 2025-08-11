@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './MainSection.css'; // Import the corresponding CSS file
+import { apiUrl } from './utils/url';
 
 const quickPresets = [
   {
@@ -30,10 +31,10 @@ const vehicleIcons = {
 };
 
 // Add gray vehicle icon URLs at the top, after imports
-const carIcon = "http://localhost:5000/uploads/car.png";
-const vanIcon = "http://localhost:5000/uploads/van.png";
-const coupeIcon = "http://localhost:5000/uploads/coupe.png";
-const anyIcon = "http://localhost:5000/uploads/car.png";
+const carIcon = '/uploads/car.png';
+const vanIcon = '/uploads/van.png';
+const coupeIcon = '/uploads/coupe.png';
+const anyIcon = '/uploads/car.png';
 
 const vehicleIconImgs = {
   SUV: carIcon,
@@ -284,7 +285,7 @@ function MainSection() {
   const fillSuggested = async () => {
     console.log('🎯 Suggest For Me clicked');
     try {
-      const response = await fetch('http://localhost:5000/api/search/suggest-car', { method: 'GET' });
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/search/suggest-car`, { method: 'GET' });
       if (!response.ok) throw new Error('Failed to fetch suggestion');
       const suggestion = await response.json();
       console.log('✅ Suggestion received:', suggestion);
@@ -368,7 +369,7 @@ function MainSection() {
     };
     console.log('📊 Search data:', searchData);
     try {
-      const response = await fetch('http://localhost:5000/api/search/search-cars', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/search/search-cars`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(searchData),
@@ -421,7 +422,7 @@ function MainSection() {
       vehicleType: selectedVehicleType,
       features: selectedFeatures,
     };
-    fetch('http://localhost:5000/api/search/search-cars', {
+    fetch(`${process.env.REACT_APP_API_URL}/api/search/search-cars`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(searchData),
@@ -487,7 +488,7 @@ function MainSection() {
     };
     console.log('📊 Config data:', configData);
     try {
-      const response = await fetch('http://localhost:5000/api/search/save-config', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/search/save-config`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -524,7 +525,12 @@ function MainSection() {
   return (
     <section className={`main-section${showPopup ? ' configurator-open' : ''}`}>
       {/* Background Image and Welcome Box */}
-      <div className="background-image-container" onMouseMove={handleMouseMove} onMouseLeave={() => { setParallax({ x: 0, y: 0 }); setIsFocused(false); }}>
+      <div 
+        className="background-image-container"
+        style={{ backgroundImage: `url(/uploads/vw_background.jpg)` }}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={() => { setParallax({ x: 0, y: 0 }); setIsFocused(false); }}
+      >
         <div className="content-container">
           <div
             className={`welcome-box${isFocused ? ' active' : ''}`}
@@ -559,7 +565,12 @@ function MainSection() {
             </div>
             {/* Vehicle icon (gray PNG) */}
             <span className="vehicle-popup-icon" role="img" aria-label="Vehicle">
-              <img src={vehicleIconImgs[selectedVehicleType] || anyIcon} alt="Vehicle" style={{width:48, height:48, filter:'grayscale(1)'}} />
+              <img 
+                src={vehicleIconImgs[selectedVehicleType] || anyIcon} 
+                alt="Vehicle" 
+                style={{width:48, height:48, filter:'grayscale(1)'}}
+                onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = anyIcon; }}
+              />
             </span>
             <h2>Car Configurator</h2>
             <div className="quick-picks">
@@ -690,7 +701,7 @@ function MainSection() {
                       <div>Price: €{car.price}</div>
                       <div>Fuel: {car.fuel}</div>
                       <div>Seats: {car.seats}</div>
-                      {car.image_path && <img src={`http://localhost:5000${car.image_path}`} alt={car.model} style={{width: '100%', borderRadius: 8, marginTop: 6}} />}
+                      {car.image_path && <img src={apiUrl(car.image_path)} alt={car.model} style={{width: '100%', borderRadius: 8, marginTop: 6}} />}
                       <button className="compare-btn" onClick={() => handleAddToCompare(car)} disabled={compareCars.find(c => c.id === car.id) || compareCars.length >= 3} style={{marginTop:8, background:'#e5e7eb', border:'1px solid #bbb', borderRadius:4, padding:'4px 10px', fontWeight:500, cursor:'pointer'}}>
                         {compareCars.find(c => c.id === car.id) ? 'Added' : 'Compare'}
                       </button>
@@ -717,7 +728,7 @@ function MainSection() {
                       <div>Drive: {car.drive_type}</div>
                       <div>Transmission: {car.transmission}</div>
                       <div>Features: {car.features}</div>
-                      {car.image_path && <img src={`http://localhost:5000${car.image_path}`} alt={car.model} style={{width: '100%', borderRadius: 6, marginTop: 6}} />}
+                      {car.image_path && <img src={apiUrl(car.image_path)} alt={car.model} style={{width: '100%', borderRadius: 6, marginTop: 6}} />}
                     </div>
                   ))}
                 </div>
@@ -756,7 +767,7 @@ function MainSection() {
               <p><strong>Drive Type:</strong> {car.drive_type}</p>
               <p><strong>Fuel:</strong> {car.fuel}</p>
               <p><strong>Seats:</strong> {car.seats}</p>
-              <img src={`http://localhost:5000${car.image_path}`} alt={car.model} className="car-image" />
+              <img src={apiUrl(car.image_path)} alt={car.model} className="car-image" />
             </div>
           ))
         )}

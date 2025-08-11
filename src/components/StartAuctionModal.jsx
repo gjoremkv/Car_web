@@ -16,7 +16,7 @@ export default function StartAuctionModal({ onClose }) {
   const token = localStorage.getItem('token');
 
   useEffect(() => {
-    fetch(`http://localhost:5000/api/cars/my-cars`, {
+    fetch(`${process.env.REACT_APP_API_URL}/api/cars/my-cars`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     })
     .then(res => res.json())
@@ -27,7 +27,7 @@ export default function StartAuctionModal({ onClose }) {
   const handleStartAuction = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('http://localhost:5000/api/auctions/start-auction', {
+      const res = await fetch('${process.env.REACT_APP_API_URL}/api/auctions/start-auction', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -59,7 +59,7 @@ export default function StartAuctionModal({ onClose }) {
     }
 
     try {
-      const auctionRes = await fetch('http://localhost:5000/api/auctions/start-auction', {
+      const auctionRes = await fetch('${process.env.REACT_APP_API_URL}/api/auctions/start-auction', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -87,7 +87,7 @@ export default function StartAuctionModal({ onClose }) {
   // Create car then auction
   const handleCreateAndAuction = async () => {
     // 1. Create car
-    const carRes = await fetch('http://localhost:5000/add-car', {
+    const carRes = await fetch(`${process.env.REACT_APP_API_URL}/add-car`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ ...carDetails, seller_id: userId })
@@ -98,7 +98,7 @@ export default function StartAuctionModal({ onClose }) {
       return;
     }
     // 2. Start auction
-    const auctionRes = await fetch('http://localhost:5000/api/auctions/start-auction', {
+    const auctionRes = await fetch('${process.env.REACT_APP_API_URL}/api/auctions/start-auction', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({

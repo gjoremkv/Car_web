@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom'; // Import useLocation
 import { popularManufacturers, otherManufacturers } from './data/manufacturers';
 import { modelsByBrand } from './data/modelsByBrand';
+import { apiUrl } from './utils/url';
 import './Buy.css';
 
 const Buy = () => {
@@ -40,6 +41,8 @@ const Buy = () => {
   });
 
   const [carListings, setCarListings] = useState([]);
+  const [imageSrcById, setImageSrcById] = useState({});
+  const triedFallbackRef = useRef(new Set());
 
   // Generate years array (last 40 years)
   const years = Array.from({ length: 40 }, (_, i) => new Date().getFullYear() - i);
@@ -73,7 +76,7 @@ const Buy = () => {
         searchData[key] === undefined && delete searchData[key]
       );
 
-      const response = await fetch("http://localhost:5000/api/search/search-cars", {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/search/search-cars`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(searchData)
@@ -111,7 +114,7 @@ const Buy = () => {
       const fetchAllCars = async () => {
         console.log('📋 Fetching all cars...');
         try {
-          const response = await fetch("http://localhost:5000/api/cars");
+          const response = await fetch(`${process.env.REACT_APP_API_URL}/api/cars`);
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
           }
@@ -134,6 +137,65 @@ const Buy = () => {
       fetchAllCars();
     }
   }, []);
+
+  // Resolve display images for listings (use main image_path or first additional image)
+  useEffect(() => {
+    if (!Array.isArray(carListings) || carListings.length === 0) {
+      setImageSrcById({});
+      return;
+    }
+
+    const nextMap = {};
+    const toFetch = [];
+    carListings.forEach(car => {
+      if (car.image_path) {
+        nextMap[car.id] = apiUrl(car.image_path);
+      } else {
+        toFetch.push(car.id);
+      }
+    });
+
+    setImageSrcById(prev => ({ ...prev, ...nextMap }));
+
+    if (toFetch.length === 0) return;
+
+    // Fetch first image for cars missing main image
+    (async () => {
+      try {
+        const results = await Promise.allSettled(
+          toFetch.map(id => fetch(`${process.env.REACT_APP_API_URL}/car/${id}/images`).then(r => r.ok ? r.json() : []))
+        );
+        const fetchedMap = {};
+        toFetch.forEach((id, idx) => {
+          const res = results[idx];
+          if (res.status === 'fulfilled' && Array.isArray(res.value) && res.value.length > 0) {
+            fetchedMap[id] = apiUrl(res.value[0].image_path);
+          }
+        });
+        if (Object.keys(fetchedMap).length) {
+          setImageSrcById(prev => ({ ...prev, ...fetchedMap }));
+        }
+      } catch (_) {}
+    })();
+  }, [carListings]);
+
+  const tryLoadFirstImage = async (carId) => {
+    if (triedFallbackRef.current.has(carId)) return null;
+    triedFallbackRef.current.add(carId);
+    try {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/car/${carId}/images`);
+      if (!res.ok) return null;
+      const arr = await res.json();
+      if (Array.isArray(arr) && arr.length > 0) {
+        const src = apiUrl(arr[0].image_path);
+        setImageSrcById(prev => ({ ...prev, [carId]: src }));
+        return src;
+      }
+    } catch (e) {
+      // ignore
+    }
+    return null;
+  };
 
   // Initialize filters from URL parameters
   useEffect(() => {
@@ -253,7 +315,7 @@ const Buy = () => {
       console.log('📋 Fetching all cars after clearing filters');
       const fetchAllCars = async () => {
         try {
-          const response = await fetch("http://localhost:5000/api/cars");
+          const response = await fetch(`${process.env.REACT_APP_API_URL}/api/cars`);
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
           }
@@ -554,7 +616,16 @@ const Buy = () => {
             carListings.map(car => (
               <Link to={`/car/${car.id}`} state={{ car }} style={{ textDecoration: 'none', color: 'inherit' }} key={car.id}>
                 <div className="car-listing">
-                <img src={car.image_path ? `http://localhost:5000${car.image_path}` : 'https://via.placeholder.com/300'} alt={car.model} />
+                <img
+                  src={imageSrcById[car.id] || (car.image_path ? apiUrl(car.image_path) : 'https://via.placeholder.com/300')}
+                  alt={car.model}
+                  onError={() => {
+                    // Avoid touching the DOM event target; update state instead
+                    setImageSrcById(prev => ({ ...prev, [car.id]: 'https://via.placeholder.com/300' }));
+                    // Try to find a first image via API once; state will re-render with it if found
+                    tryLoadFirstImage(car.id);
+                  }}
+                />
                   <div className="car-details">
                     <h3>{car.manufacturer} {car.model}</h3>
                     <p><strong>Year:</strong> {car.year}</p>

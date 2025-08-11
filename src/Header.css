@@ -101,7 +101,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 10000;
 }
 
 /* Popup content */
@@ -116,6 +116,7 @@
   max-height: 70vh;
   overflow-y: auto;
   position: relative;
+  z-index: 10001;
 }
 
 /* Close button ('X') */

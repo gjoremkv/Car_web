@@ -117,7 +117,7 @@ const SalesSection = () => {
     images.forEach(img => formData.append('images', img));
 
     try {
-      const response = await fetch('http://localhost:5000/add-car', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/add-car`, {
         method: 'POST',
         body: formData,
         headers: {

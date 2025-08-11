@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import socket from '../socket';
 
-const BASE_URL = 'http://localhost:5000';
+const BASE_URL = process.env.REACT_APP_API_URL;
 
 export default function MiniInbox({ currentUserId }) {
   const [open, setOpen] = useState(false);

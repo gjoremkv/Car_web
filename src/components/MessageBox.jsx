@@ -13,7 +13,7 @@ function MessageBox({ listingId, senderId, receiverId }) {
       socket.emit('registerUser', senderId);
     }
 
-    fetch(`http://localhost:5000/api/listing-messages/${listingId}`)
+    fetch(`${process.env.REACT_APP_API_URL}/api/listing-messages/${listingId}`)
       .then(res => res.json())
       .then(data => {
         console.log('📬 Fetched messages:', data);

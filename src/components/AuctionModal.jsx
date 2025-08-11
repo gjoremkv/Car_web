@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { apiUrl } from '../utils/url';
 
 export default function AuctionModal({ car, onClose }) {
   const [startPrice, setStartPrice] = useState('');
@@ -25,7 +26,7 @@ export default function AuctionModal({ car, onClose }) {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/start-auction', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/start-auction`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -64,7 +65,7 @@ export default function AuctionModal({ car, onClose }) {
           
           {car?.image_path && (
             <img 
-              src={`http://localhost:5000${car.image_path}`} 
+              src={apiUrl(car.image_path)} 
               alt={car.model}
               style={{ width: '100%', maxHeight: '200px', objectFit: 'cover', borderRadius: '8px', marginBottom: '1rem' }}
             />
