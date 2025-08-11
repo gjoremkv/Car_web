@@ -33,4 +33,10 @@ backend/uploads/
 .cursorrules
 
 # MCP MySQL server (development tool)
-mcp-mysql-server/ 
+mcp-mysql-server/ node_modules/
+.env
+uploads/
+backend/uploads/
+build/
+backend/build/
+*.log
